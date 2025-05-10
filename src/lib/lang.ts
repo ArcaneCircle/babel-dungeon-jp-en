@@ -1,6 +1,6 @@
-export const LANG1_CODE = "de",
+export const LANG1_CODE = "jp",
   LANG2_CODE = "en",
-  LANG1_FLAG = "🇩🇪",
+  LANG1_FLAG = "🇯🇵",
   LANG2_FLAG = "🇬🇧";
 
 export const translations = {
@@ -37,7 +37,7 @@ export const translations = {
 
   "Welcome to Babel Dungeon!": undefined,
   "Looking for a shortcut to learning German you entered the Babel Dungeon, but to your surprise, instead of answers, all you found was weird creatures creeping in the darkness.":
-    undefined,
+    "Looking for a shortcut to learning Japanese you entered the Babel Dungeon, but to your surprise, instead of answers, all you found was weird creatures creeping in the darkness.",
   "They look weak but you realized that by solving their linguistic riddles, they become stronger!":
     undefined,
   "Adapting to the circumstances, you decided to train them and build your own army of minions to, one day, get out of the dungeon and take over the world, thus banning any language you don't know.":
