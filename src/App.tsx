@@ -10,6 +10,7 @@ import GameSession from "~/pages/GameSession";
 import LevelUpModal from "~/components/modals/LevelUpModal";
 import ResultsModal from "~/components/modals/ResultsModal";
 import NoEnergyModal from "~/components/modals/NoEnergyModal";
+import InvalidBackupModal from "~/components/modals/InvalidBackupModal";
 import IntroModal from "~/components/modals/IntroModal";
 import CreditsModal from "~/components/modals/CreditsModal";
 import SettingsModal from "~/components/modals/SettingsModal";
@@ -58,6 +59,8 @@ export default function App() {
     );
   } else if (modal.type === "noEnergy") {
     modalComp = <NoEnergyModal isOpen={true} onClose={onClose} />;
+  } else if (modal.type === "invalidBackup") {
+    modalComp = <InvalidBackupModal isOpen={true} onClose={onClose} />;
   } else if (modal.type === "intro") {
     modalComp = <IntroModal isOpen={true} onClose={onClose} />;
   } else if (modal.type === "credits") {

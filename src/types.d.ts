@@ -95,6 +95,9 @@ declare type ModalPayload =
       type: "noEnergy";
     }
   | {
+      type: "invalidBackup";
+    }
+  | {
       type: "results";
       time: number;
       xp: number;

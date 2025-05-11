@@ -14,7 +14,7 @@ export default function Meanings({ meanings }: { meanings: string[] }) {
     if (getSFXEnabled()) clickSfx.play();
     setIndex((index) => (index + 1) % count);
   };
-  const fontSize = meanings[index].length > 80 ? "0.8em" : undefined;
+  const fontSize = meanings[index].length > 80 ? "0.9em" : undefined;
 
   return (
     <div>

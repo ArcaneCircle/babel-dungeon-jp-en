@@ -1,9 +1,8 @@
 import Dexie, { type EntityTable } from "dexie";
 
 import { LANG1_CODE, LANG2_CODE } from "~/lib/lang";
-import { _ } from "~/lib/util";
 
-const VERSION = 2;
+const VERSION = 3;
 
 export const db = new Dexie("gamedb") as Dexie & {
   monsters: EntityTable<Monster, "id">;
@@ -38,16 +37,7 @@ export async function exportBackup(): Promise<Backup> {
 }
 
 export async function importBackup(backup: Backup) {
-  if (
-    backup.lang !== BACKUP_CODE ||
-    backup.version > VERSION ||
-    backup.version == 1
-  ) {
-    alert(
-      _(
-        "Can't import backup, it is not compatible with your version of the game",
-      ),
-    );
+  if (!isValidBackup(backup)) {
     return;
   }
 
@@ -68,6 +58,14 @@ export async function importBackup(backup: Backup) {
   localStorage.music = backup.music || "";
   localStorage.sfx = backup.sfx || "";
   localStorage.tts = backup.tts || "";
+}
+
+export function isValidBackup(backup: Backup): boolean {
+  return (
+    backup.lang === BACKUP_CODE &&
+    backup.version <= VERSION &&
+    backup.version > 2
+  );
 }
 
 export function getSession(): Session | null {

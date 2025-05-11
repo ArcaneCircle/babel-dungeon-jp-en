@@ -28,7 +28,7 @@ export default function MonsterCard({ monster, sentence, meanings }: Props) {
     fontWeight: "bold",
     fontSize: "0.9em",
   };
-  const fontSize = sentence.length > 80 ? "0.8em" : undefined;
+  const fontSize = sentence.length > 80 ? "0.9em" : undefined;
 
   return (
     <div>

@@ -66,6 +66,8 @@ export const translations = {
   Credits: undefined,
   "[ ON]": undefined,
   "[OFF]": undefined,
+
+  ERROR: undefined,
   "Can't import backup, it is not compatible with your version of the game":
     undefined,
 };

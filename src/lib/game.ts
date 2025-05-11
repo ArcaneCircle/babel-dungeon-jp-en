@@ -28,6 +28,7 @@ import {
   setMode,
   getMusicEnabled,
   importBackup,
+  isValidBackup,
 } from "./storage";
 import { backgroundMusic } from "~/lib/sounds";
 
@@ -101,13 +102,17 @@ export async function getPlayer(): Promise<Player> {
 }
 
 export function importGame(backup: Backup) {
-  const uid = window.webxdc.selfAddr;
-  window.webxdc.sendUpdate(
-    {
-      payload: { uid, cmd: IMPORT_CMD, backup },
-    },
-    "",
-  );
+  if (isValidBackup(backup)) {
+    const uid = window.webxdc.selfAddr;
+    window.webxdc.sendUpdate(
+      {
+        payload: { uid, cmd: IMPORT_CMD, backup },
+      },
+      "",
+    );
+  } else {
+    setModalState({ type: "invalidBackup" });
+  }
 }
 
 export function startNewGame() {

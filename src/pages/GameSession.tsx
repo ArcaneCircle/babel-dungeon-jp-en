@@ -58,7 +58,7 @@ export default function GameSession({ showXP, session }: Props) {
     if (ttsEnabled && defaultMode) tts(sentence);
   }, [monster]);
 
-  const sentenceSize = sentence.length > 80 ? "0.8em" : undefined;
+  const sentenceSize = sentence.length > 80 ? "0.9em" : undefined;
   const statusBarStyle = {
     position: "sticky",
     top: 0,
