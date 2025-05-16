@@ -28,7 +28,7 @@ export default function StatusBar({ showXP, session, ...props }: Props) {
           display: "flex",
           flexDirection: "row",
           justifyContent: "space-between",
-          padding: "5px 15px 5px 15px",
+          padding: "0.5em 1em",
         }}
       >
         {showXP && (

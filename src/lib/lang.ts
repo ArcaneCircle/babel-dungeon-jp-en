@@ -36,8 +36,8 @@ export const translations = {
   "More details at: github.com/ArcaneCircle/babel-dungeon": undefined,
 
   "Welcome to Babel Dungeon!": undefined,
-  "Looking for a shortcut to learning German you entered the Babel Dungeon, but to your surprise, instead of answers, all you found was weird creatures creeping in the darkness.":
-    "Looking for a shortcut to learning Japanese you entered the Babel Dungeon, but to your surprise, instead of answers, all you found was weird creatures creeping in the darkness.",
+  "Looking for a shortcut to learning another language you entered the Babel Dungeon, but to your surprise, instead of answers, all you found was weird creatures creeping in the darkness.":
+    undefined,
   "They look weak but you realized that by solving their linguistic riddles, they become stronger!":
     undefined,
   "Adapting to the circumstances, you decided to train them and build your own army of minions to, one day, get out of the dungeon and take over the world, thus banning any language you don't know.":

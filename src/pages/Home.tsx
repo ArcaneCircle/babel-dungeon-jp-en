@@ -143,7 +143,7 @@ export default function Home({ onPlay, player, onShowSettings }: Props) {
             fontSize: "1.5em",
             color: "black",
             background: MAIN_COLOR,
-            padding: "0.6em",
+            padding: "0.6em 0.5em",
             marginTop: "1em",
           }}
           onClick={onPlay}

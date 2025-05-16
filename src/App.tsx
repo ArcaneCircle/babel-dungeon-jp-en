@@ -78,6 +78,8 @@ export default function App() {
     );
   }
   const playing = session && session.pending.length + session.failed.length;
+  const showingResults =
+    session && modal && (modal.type === "results" || modal.type === "levelUp");
   const showXP = !player || player.lvl !== MAX_LEVEL;
   const onPlay = () => {
     if (player === null) return;
@@ -91,7 +93,7 @@ export default function App() {
   return (
     <>
       {modalComp}
-      {playing ? (
+      {playing || showingResults ? (
         <GameSession session={session} showXP={showXP} />
       ) : (
         player && (

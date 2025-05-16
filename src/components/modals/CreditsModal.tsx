@@ -11,7 +11,7 @@ type Props = {
 export default function CreditsModal(props: Props) {
   return (
     <ConfirmModal {...props}>
-      <div style={{ textAlign: "center" }} tabIndex={1}>
+      <div className="selectable" style={{ textAlign: "center" }} tabIndex={1}>
         <div style={{ marginBottom: "2em" }}>
           {_("CREDITS")}
           <hr />

@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { MAIN_COLOR, RED } from "~/lib/constants";
 import { _ } from "~/lib/util";
 import { getMode, getTTSEnabled, getSFXEnabled } from "~/lib/storage";
-import { successSfx, errorSfx } from "~/lib/sounds";
+import { successSfx, errorSfx, clickSfx } from "~/lib/sounds";
 import { getCard, sendMonsterUpdate } from "~/lib/game";
 import { tts } from "~/lib/tts";
 
@@ -26,7 +26,10 @@ export default function GameSession({ showXP, session }: Props) {
   const defaultMode = getMode();
   const ttsEnabled = getTTSEnabled();
   const sfxEnabled = getSFXEnabled();
-  const monster = session.pending[0] || session.failed[0];
+  const monster =
+    session.pending[0] ||
+    session.failed[0] ||
+    session.correct[session.correct.length - 1];
   const { sentence, meanings } = getCard(monster.id);
 
   const onFailed = () => {
@@ -40,7 +43,11 @@ export default function GameSession({ showXP, session }: Props) {
     sendMonsterUpdate(monster, true);
   };
   const onShow = () => {
-    if (ttsEnabled && !defaultMode) tts(sentence);
+    if (ttsEnabled && !defaultMode) {
+      tts(sentence);
+    } else if (sfxEnabled) {
+      clickSfx.play();
+    }
     setShow(true);
   };
 
@@ -48,7 +55,7 @@ export default function GameSession({ showXP, session }: Props) {
     width: "50%",
     color: "white",
     border: "none",
-    padding: "0.5em",
+    padding: "0.6em 0.5em",
     fontSize: "1.5em",
   };
 

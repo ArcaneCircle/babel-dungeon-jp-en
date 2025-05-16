@@ -26,7 +26,8 @@ button * {
   cursor: pointer;
 }
 
-.selectable {
+.selectable,
+.selectable * {
   -webkit-user-select: text;
   -moz-user-select: text;
   -ms-user-select: text;
