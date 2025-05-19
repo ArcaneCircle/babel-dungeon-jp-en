@@ -8,7 +8,12 @@ declare type Payload = { uid: string } & (
   | {
       cmd: "mon-up";
       monster: Monster;
+      sessionId: number;
       xp: number;
+    }
+  | {
+      cmd: "finished";
+      session: Session;
     }
   | {
       cmd: "new";
@@ -83,7 +88,7 @@ declare type ModalPayload =
       type: "levelUp";
       newLevel: number;
       newEnergy: number;
-      next: ModalPayload | null;
+      next: ModalPayload;
     }
   | {
       type: "intro";

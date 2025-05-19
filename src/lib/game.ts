@@ -35,6 +35,7 @@ import { backgroundMusic } from "~/lib/sounds";
 const MONSTER_UPDATE_CMD = "mon-up",
   INIT_CMD = "init",
   NEW_CMD = "new",
+  FINISHED_CMD = "finished",
   IMPORT_CMD = "import";
 const MAX_MONSTER_STREAK = 999;
 const sixMinutes = 6 * 60 * 1000;
@@ -128,56 +129,31 @@ export function startNewGame() {
   );
 }
 
-function getResultsModal(
-  monster: Monster,
-  extraXp: number,
-): ModalPayload | null {
-  const session = getSession()!;
-  updateMonster(monster, session);
-  if (!session.pending.length && !session.failed.length) {
-    const total = session.correct.length;
-    const correct = total - session.failedIds.length;
-    return {
-      type: "results",
-      time: monster.seen - session.start,
-      xp: session.xp + extraXp,
-      accuracy: Math.round((correct / total) * 100),
-    };
-  }
-  return null;
+function getResultsModal(session: Session, endTime: number): ModalPayload {
+  const total = session.correct.length;
+  const correct = total - session.failedIds.length;
+  return {
+    type: "results",
+    time: endTime - session.start,
+    xp: session.xp,
+    accuracy: Math.round((correct / total) * 100),
+  };
 }
 
 export function sendMonsterUpdate(monster: Monster, correct: boolean) {
   monster = { ...monster };
   const now = new Date();
+  const level = getLevel();
   const isNew = !monster.seen;
   monster.seen = now.getTime();
   let xp = 0;
-  let levelUp = 0;
   if (correct) {
     monster.streak = Math.min(monster.streak + 1, MAX_MONSTER_STREAK);
-    const level = getLevel();
     if (level !== MAX_LEVEL) {
       xp = Math.min(
         isNew && level > 4 ? Math.floor(level / 2) : monster.streak,
         50,
       );
-      const { level: newLevel } = increaseXp(xp);
-      if (level < newLevel) {
-        levelUp = newLevel;
-        const newEnergy = getMaxEnergy(newLevel) - getMaxEnergy(level);
-        setModalState({
-          type: "levelUp",
-          newEnergy,
-          newLevel,
-          next: getResultsModal(monster, xp),
-        });
-      }
-    }
-
-    if (!levelUp) {
-      const modal = getResultsModal(monster, xp);
-      if (modal) setModalState(modal);
     }
 
     const addHours = (hours: number): number =>
@@ -217,18 +193,44 @@ export function sendMonsterUpdate(monster: Monster, correct: boolean) {
     monster.streak = 0;
     monster.due = 0;
   }
-  const update = {
-    payload: {
-      uid: window.webxdc.selfAddr,
-      cmd: MONSTER_UPDATE_CMD,
-      monster,
-      xp,
-    },
-  } as SendingStatusUpdate<Payload>;
-  if (levelUp) {
-    update.info = `${window.webxdc.selfName} reached level ${levelUp} 🎉`;
+
+  const session = getSession()!;
+  updateMonster(monster, session);
+  session.xp += xp;
+  if (!session.pending.length && !session.failed.length) {
+    const update = {
+      payload: {
+        uid: window.webxdc.selfAddr,
+        cmd: FINISHED_CMD,
+        session,
+      },
+    } as SendingStatusUpdate<Payload>;
+    const { level: newLevel } = increaseXp(session.xp);
+    if (level < newLevel) {
+      const newEnergy = getMaxEnergy(newLevel) - getMaxEnergy(level);
+      setModalState({
+        type: "levelUp",
+        newEnergy,
+        newLevel,
+        next: getResultsModal(session, monster.seen),
+      });
+      update.info = `${window.webxdc.selfName} reached level ${newLevel} 🎉`;
+    } else {
+      setModalState(getResultsModal(session, monster.seen));
+    }
+    window.webxdc.sendUpdate(update, "");
+  } else {
+    const update = {
+      payload: {
+        uid: window.webxdc.selfAddr,
+        cmd: MONSTER_UPDATE_CMD,
+        sessionId: session.start,
+        monster,
+        xp,
+      },
+    } as SendingStatusUpdate<Payload>;
+    window.webxdc.sendUpdate(update, "");
   }
-  window.webxdc.sendUpdate(update, "");
 }
 
 export function initGame(
@@ -270,40 +272,44 @@ async function processUpdate(update: ReceivedStatusUpdate<Payload>) {
         return; // this command is not real update, abort
       }
       case MONSTER_UPDATE_CMD: {
-        const session = getSession()!;
-        updateMonster(payload.monster, session);
-        if (payload.xp) {
-          session.xp += payload.xp;
-          const { xp, level } = increaseXp(payload.xp);
-          const oldLevel = getLevel();
-          if (oldLevel < level) {
-            const newEnergy = getMaxEnergy(level) - getMaxEnergy(oldLevel);
-            if (newEnergy > 0) {
-              const { energy, time } = getEnergy();
-              setEnergy(energy + newEnergy, time);
-            }
-          }
-          setXp(xp);
-          setLevel(level);
+        const session = getSession();
+        if (session && payload.sessionId === session.start) {
+          updateMonster(payload.monster, session);
+          if (payload.xp) session.xp += payload.xp;
+          setSession(session);
+          setSessionState(session);
         }
-        if (!session.pending.length && !session.failed.length) {
-          await db.monsters.bulkPut(session.correct);
-          const date = new Date(
-            session.correct[session.correct.length - 1].seen,
-          );
-          const newPlayed = date.setHours(0, 0, 0, 0);
-          const lastPlayed = getLastPlayed();
-          if (lastPlayed < newPlayed) {
-            setStudiedToday(session.correct.length); // different day, reset counter
-            setLastPlayed(newPlayed);
-            const oneDayBefore = date.setDate(date.getDate() - 1);
-            setStreak(lastPlayed < oneDayBefore ? 1 : getStreak() + 1);
-          } else {
-            // same day, increase counter
-            setStudiedToday(getStudiedToday() + session.correct.length);
+        break;
+      }
+      case FINISHED_CMD: {
+        const session = payload.session;
+        await db.monsters.bulkPut(session.correct);
+
+        const { xp, level } = increaseXp(session.xp);
+        const oldLevel = getLevel();
+        if (oldLevel < level) {
+          const newEnergy = getMaxEnergy(level) - getMaxEnergy(oldLevel);
+          if (newEnergy > 0) {
+            const { energy, time } = getEnergy();
+            setEnergy(energy + newEnergy, time);
           }
-          if (setPlayerState) setPlayerState(await getPlayer());
         }
+        setXp(xp);
+        setLevel(level);
+
+        const date = new Date(session.correct[session.correct.length - 1].seen);
+        const newPlayed = date.setHours(0, 0, 0, 0);
+        const lastPlayed = getLastPlayed();
+        if (lastPlayed < newPlayed) {
+          setStudiedToday(session.correct.length); // different day, reset counter
+          setLastPlayed(newPlayed);
+          const oneDayBefore = date.setDate(date.getDate() - 1);
+          setStreak(lastPlayed < oneDayBefore ? 1 : getStreak() + 1);
+        } else {
+          // same day, increase counter
+          setStudiedToday(getStudiedToday() + session.correct.length);
+        }
+        if (setPlayerState) setPlayerState(await getPlayer());
         setSession(session);
         setSessionState(session);
         break;
@@ -311,7 +317,7 @@ async function processUpdate(update: ReceivedStatusUpdate<Payload>) {
       case NEW_CMD: {
         setEnergy(payload.energy, payload.time);
         setMode(payload.mode);
-        const session = await createNewSession();
+        const session = await createNewSession(payload.time);
         setSession(session);
         setShowIntro();
         setSessionState(session);
@@ -334,11 +340,10 @@ async function processUpdate(update: ReceivedStatusUpdate<Payload>) {
   if (update.serial === update.max_serial) setMaxSerial(update.serial);
 }
 
-async function createNewSession(): Promise<Session> {
-  const now = Date.now();
+async function createNewSession(start: number): Promise<Session> {
   let monsters = await db.monsters
     .orderBy("due")
-    .filter((monster) => monster.due <= now)
+    .filter((monster) => monster.due <= start)
     .limit(10)
     .toArray();
   let unseenIndex = getUnseenIndex();
@@ -358,7 +363,7 @@ async function createNewSession(): Promise<Session> {
     monsters = await db.monsters.orderBy("due").limit(10).toArray();
   }
   return {
-    start: now,
+    start,
     xp: 0,
     failedIds: [],
     correct: [],
