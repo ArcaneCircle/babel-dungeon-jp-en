@@ -1,6 +1,5 @@
 import { useState } from "react";
 
-import { LANG1_FLAG, LANG2_FLAG } from "~/lib/lang";
 import { _ } from "~/lib/util";
 import { importGame } from "~/lib/game";
 import {
@@ -100,9 +99,7 @@ export default function SettingsModal({
   const musicState = _(musicEnabled ? "[ ON]" : "[OFF]");
   const sfxState = _(sfxEnabled ? "[ ON]" : "[OFF]");
   const ttsState = _(ttsEnabled ? "[ ON]" : "[OFF]");
-  const modeState = defaultMode
-    ? `[${LANG1_FLAG}>${LANG2_FLAG}]`
-    : `[${LANG2_FLAG}>${LANG1_FLAG}]`;
+  const modeState = _(defaultMode ? "[EASY]" : "[HARD]");
 
   return (
     <ConfirmModal onClose={onClose} {...props}>

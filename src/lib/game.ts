@@ -129,7 +129,11 @@ export function startNewGame() {
   );
 }
 
-function getResultsModal(session: Session, endTime: number): ModalPayload {
+function getResultsModal(
+  session: Session,
+  endTime: number,
+  next: ModalPayload | null,
+): ModalPayload {
   const total = session.correct.length;
   const correct = total - session.failedIds.length;
   return {
@@ -137,6 +141,7 @@ function getResultsModal(session: Session, endTime: number): ModalPayload {
     time: endTime - session.start,
     xp: session.xp,
     accuracy: Math.round((correct / total) * 100),
+    next,
   };
 }
 
@@ -208,15 +213,16 @@ export function sendMonsterUpdate(monster: Monster, correct: boolean) {
     const { level: newLevel } = increaseXp(session.xp);
     if (level < newLevel) {
       const newEnergy = getMaxEnergy(newLevel) - getMaxEnergy(level);
-      setModalState({
-        type: "levelUp",
-        newEnergy,
-        newLevel,
-        next: getResultsModal(session, monster.seen),
-      });
+      setModalState(
+        getResultsModal(session, monster.seen, {
+          type: "levelUp",
+          newEnergy,
+          newLevel,
+        }),
+      );
       update.info = `${window.webxdc.selfName} reached level ${newLevel} 🎉`;
     } else {
-      setModalState(getResultsModal(session, monster.seen));
+      setModalState(getResultsModal(session, monster.seen, null));
     }
     window.webxdc.sendUpdate(update, "");
   } else {

@@ -88,7 +88,6 @@ declare type ModalPayload =
       type: "levelUp";
       newLevel: number;
       newEnergy: number;
-      next: ModalPayload;
     }
   | {
       type: "intro";
@@ -107,6 +106,7 @@ declare type ModalPayload =
       time: number;
       xp: number;
       accuracy: number;
+      next: ModalPayload | null;
     }
   | {
       type: "settings";

@@ -1,5 +1,4 @@
-export const SENTENCES =
-  `嘘！	That's bullshit!|That's a lie!|That's a lie.|No way!|Are you kidding me?|For real?|You're lying!
+export const SENTENCES = `嘘！	That's bullshit!|That's a lie!|That's a lie.|No way!|Are you kidding me?|For real?|You're lying!
 え？	Pardon me?|What?|Huh?
 何？	What?
 誰？	Who?|Who is it?|Who are you?

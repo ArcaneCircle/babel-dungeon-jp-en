@@ -36,22 +36,22 @@ export default function App() {
 
   if (modal === null) {
   } else if (modal.type === "levelUp") {
-    const closeLevelUp = () => {
-      setModal(modal.next);
-    };
     modalComp = (
       <LevelUpModal
         level={modal.newLevel}
         energy={modal.newEnergy}
         isOpen={true}
-        onClose={closeLevelUp}
+        onClose={onClose}
       />
     );
   } else if (modal.type === "results") {
+    const closeResults = () => {
+      setModal(modal.next);
+    };
     modalComp = (
       <ResultsModal
         isOpen={true}
-        onClose={onClose}
+        onClose={closeResults}
         time={modal.time}
         xp={modal.xp}
         accuracy={modal.accuracy}
@@ -94,7 +94,11 @@ export default function App() {
     <>
       {modalComp}
       {playing || showingResults ? (
-        <GameSession session={session} showXP={showXP} />
+        <GameSession
+          session={session}
+          showXP={showXP}
+          showingResults={showingResults || false}
+        />
       ) : (
         player && (
           <Home
