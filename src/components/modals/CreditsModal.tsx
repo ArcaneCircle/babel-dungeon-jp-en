@@ -1,4 +1,4 @@
-import { _ } from "~/lib/util";
+import { _, LANG1_CODE, LANG2_CODE } from "~/lib/lang";
 
 import ConfirmModal from "./ConfirmModal";
 
@@ -21,7 +21,13 @@ export default function CreditsModal(props: Props) {
           <p>{_("Sentences collection: tatoeba.org")}</p>
           <p>{_(`Music: "Cave" by celestialghost8`)}</p>
           <p>{_("Sound effects by celestialghost8, Fupi and Dizzy Crow")}</p>
-          <p>{_("More details at: github.com/ArcaneCircle/babel-dungeon")}</p>
+          <p>
+            {_(
+              "More details at: github.com/ArcaneCircle/babel-dungeon-{{l1}}-{{l2}}",
+            )
+              .replace("{{l1}}", LANG1_CODE)
+              .replace("{{l2}}", LANG2_CODE)}
+          </p>
         </div>
       </div>
     </ConfirmModal>

@@ -18,6 +18,14 @@ pnpm i
 pnpm check
 ```
 
+### Generate sentences
+
+To generate the list of sentences from the raw .tsv data file:
+
+```
+pnpm generate
+```
+
 ### Testing the app in the browser
 
 To test your work in your browser (with hot reloading!) while developing:

@@ -1,5 +1,5 @@
 import { MAIN_COLOR, MASTERED_STREAK } from "~/lib/constants";
-import { _ } from "~/lib/util";
+import { _ } from "~/lib/lang";
 
 import MonsterImg from "~/components/MonsterImg";
 

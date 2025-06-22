@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-import { _ } from "~/lib/util";
+import { _ } from "~/lib/lang";
 import { levelUpSfx, successSfx } from "~/lib/sounds";
 import { getSFXEnabled } from "~/lib/storage";
 
@@ -48,7 +48,11 @@ export default function LevelUpModal({ level, energy, ...props }: Props) {
           </span>
           <PartyPopper />
         </div>
-        {energy > 0 && <div style={{ marginTop: "1em" }}>+{energy} energy</div>}
+        {energy > 0 && (
+          <div style={{ marginTop: "1em" }}>
+            {_("+{{x}} max. energy").replace("{{x}}", String(energy))}
+          </div>
+        )}
       </div>
     </ConfirmModal>
   );

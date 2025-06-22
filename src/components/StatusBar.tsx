@@ -1,5 +1,5 @@
 import { RED } from "~/lib/constants";
-import { _ } from "~/lib/util";
+import { _ } from "~/lib/lang";
 
 import BasicProgressBar from "./BasicProgressBar";
 import TextIcon from "~/components/icons/TextIcon";

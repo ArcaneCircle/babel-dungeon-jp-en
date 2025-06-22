@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { _ } from "~/lib/util";
+import { _ } from "~/lib/lang";
 import { importGame } from "~/lib/game";
 import {
   getMusicEnabled,

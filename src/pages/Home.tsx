@@ -1,5 +1,5 @@
 import { MAIN_COLOR, RED, MAX_LEVEL } from "~/lib/constants";
-import { _ } from "~/lib/util";
+import { _ } from "~/lib/lang";
 import { getLastPlayed } from "~/lib/storage";
 import PixelatedProgressBar from "~/components/PixelatedProgressBar";
 import StatSection from "~/components/StatSection";

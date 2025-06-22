@@ -1,4 +1,4 @@
-import { _ } from "~/lib/util";
+import { _ } from "~/lib/lang";
 
 import ConfirmModal from "./ConfirmModal";
 

@@ -1,7 +1,7 @@
 export const LANG1_CODE = "jp",
   LANG2_CODE = "en";
 
-export const translations = {
+const translations = {
   Continue: undefined,
 
   MAX: undefined,
@@ -31,7 +31,8 @@ export const translations = {
   "Sentences collection: tatoeba.org": undefined,
   'Music: "Cave" by celestialghost8': undefined,
   "Sound effects by celestialghost8, Fupi and Dizzy Crow": undefined,
-  "More details at: github.com/ArcaneCircle/babel-dungeon": undefined,
+  "More details at: github.com/ArcaneCircle/babel-dungeon-{{l1}}-{{l2}}":
+    undefined,
 
   "Welcome to Babel Dungeon!": undefined,
   "Looking for a shortcut to learning another language you entered the Babel Dungeon, but to your surprise, instead of answers, all you found was weird creatures creeping in the darkness.":
@@ -43,6 +44,7 @@ export const translations = {
 
   "You Leveled Up!": undefined,
   "Now at level": undefined,
+  "+{{x}} max. energy": undefined,
 
   "LOW ENERGY!": undefined,
   "Your energy is too low. You need at least {{e}} points to play.": undefined,
@@ -71,3 +73,8 @@ export const translations = {
   "Can't import backup, it is not compatible with your version of the game":
     undefined,
 };
+
+type TranslationKey = keyof typeof translations;
+export function _(key: TranslationKey): string {
+  return translations[key] || key;
+}

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 
 import { MAIN_COLOR, RED } from "~/lib/constants";
-import { _ } from "~/lib/util";
+import { _ } from "~/lib/lang";
 import { getMode, getTTSEnabled, getSFXEnabled } from "~/lib/storage";
 import { successSfx, errorSfx, clickSfx } from "~/lib/sounds";
 import { getCard, sendMonsterUpdate } from "~/lib/game";
@@ -48,10 +48,6 @@ function Quiz({
   monster,
 }: Props & { monster: Monster }) {
   const [show, setShow] = useState(false);
-
-  if (showingResults) {
-    monster = { ...monster, streak: monster.streak - 1 };
-  }
 
   const defaultMode = getMode();
   const ttsEnabled = getTTSEnabled();

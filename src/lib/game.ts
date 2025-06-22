@@ -149,16 +149,13 @@ export function sendMonsterUpdate(monster: Monster, correct: boolean) {
   monster = { ...monster };
   const now = new Date();
   const level = getLevel();
-  const isNew = !monster.seen;
   monster.seen = now.getTime();
   let xp = 0;
   if (correct) {
     monster.streak = Math.min(monster.streak + 1, MAX_MONSTER_STREAK);
     if (level !== MAX_LEVEL) {
-      xp = Math.min(
-        isNew && level > 4 ? Math.floor(level / 2) : monster.streak,
-        50,
-      );
+      const bonus = Math.min(Math.floor(level / 5), 40);
+      xp = Math.min(bonus + monster.streak, 50);
     }
 
     const addHours = (hours: number): number =>

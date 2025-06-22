@@ -1,5 +1,5 @@
 import { MAIN_COLOR, RED } from "~/lib/constants";
-import { _ } from "~/lib/util";
+import { _ } from "~/lib/lang";
 import { formatTime } from "~/lib/dateutil";
 
 import ConfirmModal from "./ConfirmModal";
