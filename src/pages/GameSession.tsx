@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 
 import { MAIN_COLOR, RED } from "~/lib/constants";
 import { _ } from "~/lib/lang";
@@ -14,6 +14,20 @@ import TextIcon from "~/components/icons/TextIcon";
 import PixelatedImgIcon from "~/components/icons/PixelatedImgIcon";
 
 import checkmarkURL from "@img/checkmark.png";
+
+const baseBtn = {
+  width: "50%",
+  color: "white",
+  border: "none",
+  padding: "0.6em 0.5em",
+  fontSize: "1.5em",
+};
+
+const statusBarStyle = {
+  position: "sticky",
+  top: 0,
+  backgroundColor: "black",
+};
 
 interface Props {
   showingResults: boolean;
@@ -54,55 +68,63 @@ function Quiz({
   const sfxEnabled = getSFXEnabled();
   const { sentence, meanings } = getCard(monster.id);
 
-  const onFailed = () => {
-    if (sfxEnabled && !(ttsEnabled && defaultMode)) errorSfx.play();
+  const onFailed = useCallback(() => {
     setShow(false);
+    const ttsWillSpeak = ttsEnabled && defaultMode;
+    if (sfxEnabled && !ttsWillSpeak) errorSfx.play();
     sendMonsterUpdate(monster, false);
-  };
-  const onCorrect = () => {
-    if (sfxEnabled && !(ttsEnabled && defaultMode)) successSfx.play();
-    setShow(false);
+  }, [monster, ttsEnabled, sfxEnabled, defaultMode]);
+  const onCorrect = useCallback(() => {
+    const sessionFinished =
+      session.failed.length + session.pending.length === 1;
+    const ttsWillSpeak = ttsEnabled && defaultMode;
+    if (sfxEnabled && (!ttsWillSpeak || sessionFinished)) {
+      successSfx.play();
+    }
     sendMonsterUpdate(monster, true);
-  };
-  const onShow = () => {
+  }, [monster, ttsEnabled, sfxEnabled, defaultMode]);
+  const onShow = useCallback(() => {
     if (ttsEnabled && !defaultMode) {
       tts(sentence);
     } else if (sfxEnabled) {
       clickSfx.play();
     }
     setShow(true);
-  };
+  }, [monster.id, ttsEnabled, sfxEnabled, defaultMode]);
 
-  const baseBtn = {
-    width: "50%",
-    color: "white",
-    border: "none",
-    padding: "0.6em 0.5em",
-    fontSize: "1.5em",
-  };
-
-  const meaningsComp = <Meanings key={monster.id} meanings={meanings} />;
+  const meaningsComp = useMemo(
+    () => <Meanings key={monster.id} meanings={meanings} />,
+    [monster.id],
+  );
 
   useEffect(() => {
     if (ttsEnabled && defaultMode && !showingResults) tts(sentence);
   }, [monster]);
 
   const sentenceSize = sentence.length > 80 ? "0.9em" : undefined;
-  const statusBarStyle = {
-    position: "sticky",
-    top: 0,
-    backgroundColor: "black",
-  };
+
+  const statusBarM = useMemo(
+    () => (
+      <StatusBar session={session} showXP={showXP} style={statusBarStyle} />
+    ),
+    [session, showXP],
+  );
+  const monsterM = useMemo(
+    () => (
+      <MonsterCard
+        monster={monster}
+        sentence={sentence}
+        meanings={defaultMode ? undefined : meaningsComp}
+      />
+    ),
+    [monster.id],
+  );
 
   return (
     <div style={{ textAlign: "center" }}>
-      <StatusBar session={session} showXP={showXP} style={statusBarStyle} />
+      {statusBarM}
       <div style={{ padding: "0.5em 0.3em 0.3em 0.3em", marginBottom: "6em" }}>
-        <MonsterCard
-          monster={monster}
-          sentence={sentence}
-          meanings={defaultMode ? undefined : meaningsComp}
-        />
+        {monsterM}
         {show && (
           <>
             <div style={{ paddingTop: "0.5em", paddingBottom: "0.5em" }}>
@@ -111,7 +133,9 @@ function Quiz({
             {defaultMode ? (
               meaningsComp
             ) : (
-              <div style={{ fontSize: sentenceSize }}>{sentence}</div>
+              <div className="selectable" style={{ fontSize: sentenceSize }}>
+                {sentence}
+              </div>
             )}
           </>
         )}

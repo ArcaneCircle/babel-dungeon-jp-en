@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback, useMemo } from "react";
 
 import { MAX_LEVEL, PLAY_ENERGY_COST } from "~/lib/constants";
 import { initGame, startNewGame } from "~/lib/game";
@@ -23,91 +23,115 @@ export default function App() {
   const [session, setSession] = useState(null as Session | null);
   const [player, setPlayer] = useState(null as Player | null);
   const [modal, setModal] = useState(null as ModalPayload | null);
-  const [_ignore] = useState(() => initGame(setSession, setPlayer, setModal));
+  useMemo(() => initGame(setSession, setPlayer, setModal), []);
 
   let modalComp = null;
-  const onClose = () => {
+  const onClose = useCallback(() => {
     setModal(null);
-  };
-  const onShowSettings = () => {
+  }, []);
+  const onShowSettings = useCallback(() => {
     if (getSFXEnabled()) clickSfx.play();
     setModal({ type: "settings" });
-  };
+  }, []);
 
   if (modal === null) {
   } else if (modal.type === "levelUp") {
-    modalComp = (
-      <LevelUpModal
-        level={modal.newLevel}
-        energy={modal.newEnergy}
-        isOpen={true}
-        onClose={onClose}
-      />
-    );
+    modalComp = useMemo(() => {
+      return (
+        <LevelUpModal
+          level={modal.newLevel}
+          energy={modal.newEnergy}
+          isOpen={true}
+          onClose={onClose}
+        />
+      );
+    }, [modal, onClose]);
   } else if (modal.type === "results") {
-    const closeResults = () => {
-      setModal(modal.next);
-    };
-    modalComp = (
-      <ResultsModal
-        isOpen={true}
-        onClose={closeResults}
-        time={modal.time}
-        xp={modal.xp}
-        accuracy={modal.accuracy}
-      />
+    modalComp = useMemo(
+      () => (
+        <ResultsModal
+          isOpen={true}
+          onClose={() => setModal(modal.next)}
+          time={modal.time}
+          xp={modal.xp}
+          accuracy={modal.accuracy}
+        />
+      ),
+      [modal],
     );
   } else if (modal.type === "noEnergy") {
-    modalComp = <NoEnergyModal isOpen={true} onClose={onClose} />;
+    modalComp = useMemo(
+      () => <NoEnergyModal isOpen={true} onClose={onClose} />,
+      [onClose],
+    );
   } else if (modal.type === "invalidBackup") {
-    modalComp = <InvalidBackupModal isOpen={true} onClose={onClose} />;
+    modalComp = useMemo(
+      () => <InvalidBackupModal isOpen={true} onClose={onClose} />,
+      [onClose],
+    );
   } else if (modal.type === "intro") {
-    modalComp = <IntroModal isOpen={true} onClose={onClose} />;
+    modalComp = useMemo(
+      () => <IntroModal isOpen={true} onClose={onClose} />,
+      [onClose],
+    );
   } else if (modal.type === "credits") {
-    modalComp = <CreditsModal isOpen={true} onClose={onClose} />;
+    modalComp = useMemo(
+      () => <CreditsModal isOpen={true} onClose={onClose} />,
+      [onClose],
+    );
   } else if (modal.type === "settings") {
-    const onShowCredits = () => {
-      setModal({ type: "credits" });
-    };
-    modalComp = (
-      <SettingsModal
-        isOpen={true}
-        onClose={onClose}
-        onShowCredits={onShowCredits}
-      />
+    modalComp = useMemo(
+      () => (
+        <SettingsModal
+          isOpen={true}
+          onClose={onClose}
+          onShowCredits={() => setModal({ type: "credits" })}
+        />
+      ),
+      [onClose],
     );
   }
   const playing = session && session.pending.length + session.failed.length;
-  const showingResults =
-    session && modal && (modal.type === "results" || modal.type === "levelUp");
+  const showingResults = !!(
+    session &&
+    modal &&
+    (modal.type === "results" || modal.type === "levelUp")
+  );
   const showXP = !player || player.lvl !== MAX_LEVEL;
-  const onPlay = () => {
+  const onPlay = useCallback(() => {
     if (player === null) return;
     if (player.energy >= PLAY_ENERGY_COST) {
       startNewGame();
     } else {
       setModal({ type: "noEnergy" });
     }
-  };
+  }, [player]);
 
   return (
     <>
       {modalComp}
-      {playing || showingResults ? (
-        <GameSession
-          session={session}
-          showXP={showXP}
-          showingResults={showingResults || false}
-        />
-      ) : (
-        player && (
-          <Home
-            player={player}
-            onShowSettings={onShowSettings}
-            onPlay={onPlay}
-          />
-        )
-      )}
+      {playing || showingResults
+        ? useMemo(
+            () => (
+              <GameSession
+                session={session}
+                showXP={showXP}
+                showingResults={showingResults}
+              />
+            ),
+            [session, showXP, showingResults],
+          )
+        : player &&
+          useMemo(
+            () => (
+              <Home
+                player={player}
+                onShowSettings={onShowSettings}
+                onPlay={onPlay}
+              />
+            ),
+            [player, onShowSettings, onPlay],
+          )}
     </>
   );
 }
