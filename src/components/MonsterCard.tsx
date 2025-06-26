@@ -1,5 +1,5 @@
-import { MAIN_COLOR, MASTERED_STREAK } from "~/lib/constants";
-import { _ } from "~/lib/lang";
+import { MAIN_COLOR, GOLDEN, MASTERED_STREAK } from "~/lib/constants";
+import { _ } from "~/lib/i18n";
 
 import MonsterImg from "~/components/MonsterImg";
 
@@ -15,7 +15,7 @@ export default function MonsterCard({ monster, sentence, meanings }: Props) {
     : _("NEW");
   const labelColor =
     monster.streak >= MASTERED_STREAK
-      ? "#efb60e"
+      ? GOLDEN
       : monster.seen
         ? "#dddddd"
         : MAIN_COLOR;

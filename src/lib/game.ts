@@ -1,7 +1,7 @@
 import { ReceivedStatusUpdate, SendingStatusUpdate } from "@webxdc/types";
 
-import { SENTENCES } from "./sentences";
-import { MAX_LEVEL, MASTERED_STREAK, PLAY_ENERGY_COST } from "./constants";
+import { SENTENCES } from "~/lib/sentences";
+import { MAX_LEVEL, MASTERED_STREAK, PLAY_ENERGY_COST } from "~/lib/constants";
 import {
   db,
   getSession,
@@ -22,15 +22,10 @@ import {
   getUnseenIndex,
   setMaxSerial,
   getMaxSerial,
-  getShowIntro,
   setShowIntro,
-  getMode,
-  setMode,
-  getMusicEnabled,
   importBackup,
   isValidBackup,
-} from "./storage";
-import { backgroundMusic } from "~/lib/sounds";
+} from "~/lib/storage";
 
 const MONSTER_UPDATE_CMD = "mon-up",
   INIT_CMD = "init",
@@ -42,7 +37,6 @@ const sixMinutes = 6 * 60 * 1000;
 let energyLastCheck = 0;
 let setPlayerState = null as ((player: Player) => void) | null;
 let setSessionState = (_: Session | null) => {};
-let setModalState = (_: ModalPayload | null) => {};
 const queue: ReceivedStatusUpdate<Payload>[] = [];
 const workerLoop = async () => {
   while (queue.length > 0) {
@@ -102,7 +96,7 @@ export async function getPlayer(): Promise<Player> {
   };
 }
 
-export function importGame(backup: Backup) {
+export function importGame(backup: Backup): boolean {
   if (isValidBackup(backup)) {
     const uid = window.webxdc.selfAddr;
     window.webxdc.sendUpdate(
@@ -111,19 +105,21 @@ export function importGame(backup: Backup) {
       },
       "",
     );
-  } else {
-    setModalState({ type: "invalidBackup" });
+    return true;
   }
+  return false;
 }
 
-export function startNewGame() {
-  const energy = getEnergy().energy - PLAY_ENERGY_COST;
+export function startNewGame(mode: GameMode) {
+  const energyCost =
+    mode === "easy" ? PLAY_ENERGY_COST : Math.floor(PLAY_ENERGY_COST / 2);
+  const energy = getEnergy().energy - energyCost;
   if (energy < 0) return;
 
   const uid = window.webxdc.selfAddr;
   window.webxdc.sendUpdate(
     {
-      payload: { uid, cmd: NEW_CMD, time: Date.now(), energy, mode: getMode() },
+      payload: { uid, cmd: NEW_CMD, time: Date.now(), energy, mode },
     },
     "",
   );
@@ -145,8 +141,12 @@ function getResultsModal(
   };
 }
 
-export function sendMonsterUpdate(monster: Monster, correct: boolean) {
+export function sendMonsterUpdate(
+  monster: Monster,
+  correct: boolean,
+): ModalPayload | null {
   monster = { ...monster };
+  let modal = null;
   const now = new Date();
   const level = getLevel();
   monster.seen = now.getTime();
@@ -210,16 +210,14 @@ export function sendMonsterUpdate(monster: Monster, correct: boolean) {
     const { level: newLevel } = increaseXp(session.xp);
     if (level < newLevel) {
       const newEnergy = getMaxEnergy(newLevel) - getMaxEnergy(level);
-      setModalState(
-        getResultsModal(session, monster.seen, {
-          type: "levelUp",
-          newEnergy,
-          newLevel,
-        }),
-      );
+      modal = getResultsModal(session, monster.seen, {
+        type: "levelUp",
+        newEnergy,
+        newLevel,
+      });
       update.info = `${window.webxdc.selfName} reached level ${newLevel} 🎉`;
     } else {
-      setModalState(getResultsModal(session, monster.seen, null));
+      modal = getResultsModal(session, monster.seen, null);
     }
     window.webxdc.sendUpdate(update, "");
   } else {
@@ -234,12 +232,12 @@ export function sendMonsterUpdate(monster: Monster, correct: boolean) {
     } as SendingStatusUpdate<Payload>;
     window.webxdc.sendUpdate(update, "");
   }
+  return modal;
 }
 
 export function initGame(
   sessionHook: (session: Session | null) => void,
   playerHook: (player: Player) => void,
-  modalHook: (modal: ModalPayload | null) => void,
 ) {
   window.webxdc
     .setUpdateListener(
@@ -253,7 +251,6 @@ export function initGame(
           cmd: INIT_CMD,
           sessionHook,
           playerHook,
-          modalHook,
         },
         serial: -1,
         max_serial: 0,
@@ -268,8 +265,6 @@ async function processUpdate(update: ReceivedStatusUpdate<Payload>) {
       case INIT_CMD: {
         setSessionState = payload.sessionHook;
         setPlayerState = payload.playerHook;
-        setModalState = payload.modalHook;
-        setModalState(getShowIntro() ? { type: "intro" } : null);
         setSessionState(getSession());
         setPlayerState(await getPlayer());
         return; // this command is not real update, abort
@@ -277,9 +272,17 @@ async function processUpdate(update: ReceivedStatusUpdate<Payload>) {
       case MONSTER_UPDATE_CMD: {
         const session = getSession();
         if (session && payload.sessionId === session.start) {
-          updateMonster(payload.monster, session);
-          if (payload.xp) session.xp += payload.xp;
-          setSession(session);
+          const findMon = (m: Monster) =>
+            m.id === payload.monster.id && m.seen === payload.monster.seen;
+          // hack for iOS bug: updates get processed twice
+          if (
+            session.correct.findIndex(findMon) === -1 &&
+            session.failed.findIndex(findMon) === -1
+          ) {
+            updateMonster(payload.monster, session);
+            if (payload.xp) session.xp += payload.xp;
+            setSession(session);
+          }
           setSessionState(session);
         }
         break;
@@ -289,13 +292,8 @@ async function processUpdate(update: ReceivedStatusUpdate<Payload>) {
         await db.monsters.bulkPut(session.correct);
 
         const { xp, level } = increaseXp(session.xp);
-        const oldLevel = getLevel();
-        if (oldLevel < level) {
-          const newEnergy = getMaxEnergy(level) - getMaxEnergy(oldLevel);
-          if (newEnergy > 0) {
-            const { energy, time } = getEnergy();
-            setEnergy(energy + newEnergy, time);
-          }
+        if (getLevel() < level) {
+          setEnergy(getMaxEnergy(level), Date.now());
         }
         setXp(xp);
         setLevel(level);
@@ -319,8 +317,7 @@ async function processUpdate(update: ReceivedStatusUpdate<Payload>) {
       }
       case NEW_CMD: {
         setEnergy(payload.energy, payload.time);
-        setMode(payload.mode);
-        const session = await createNewSession(payload.time);
+        const session = await createNewSession(payload.time, payload.mode);
         setSession(session);
         setShowIntro();
         setSessionState(session);
@@ -330,11 +327,6 @@ async function processUpdate(update: ReceivedStatusUpdate<Payload>) {
         await importBackup(payload.backup);
         if (setPlayerState) setPlayerState(await getPlayer());
         setSessionState(getSession());
-        if (getMusicEnabled()) {
-          backgroundMusic.play();
-        } else {
-          backgroundMusic.stop();
-        }
         break;
       }
     }
@@ -343,7 +335,10 @@ async function processUpdate(update: ReceivedStatusUpdate<Payload>) {
   if (update.serial === update.max_serial) setMaxSerial(update.serial);
 }
 
-async function createNewSession(start: number): Promise<Session> {
+async function createNewSession(
+  start: number,
+  mode: GameMode,
+): Promise<Session> {
   let monsters = await db.monsters
     .orderBy("due")
     .filter((monster) => monster.due <= start)
@@ -367,6 +362,7 @@ async function createNewSession(start: number): Promise<Session> {
   }
   return {
     start,
+    mode,
     xp: 0,
     failedIds: [],
     correct: [],
@@ -409,8 +405,9 @@ function increaseXp(xp: number): { xp: number; level: number } {
 }
 
 function toNextLevelMediumFast(level: number): number {
-  if (level === 1) return 10;
-  if (level === 2) return 24;
+  if (level === 1) return 20;
+  if (level === 2) return 34;
+  if (level === 3) return 47;
   return (level + 1) ** 3 - level ** 3;
 }
 

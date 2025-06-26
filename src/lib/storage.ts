@@ -1,6 +1,6 @@
 import Dexie, { type EntityTable } from "dexie";
 
-import { LANG1_CODE, LANG2_CODE } from "~/lib/lang";
+import { LANG1_CODE, LANG2_CODE } from "~/lib/constants";
 
 const VERSION = 3;
 
@@ -20,7 +20,6 @@ export async function exportBackup(): Promise<Backup> {
     monsters,
     session: localStorage.session,
     unseenIndex: localStorage.unseenIndex,
-    mode: localStorage.mode,
     // Player
     streak: localStorage.streak,
     level: localStorage.level,
@@ -30,7 +29,6 @@ export async function exportBackup(): Promise<Backup> {
     studiedToday: localStorage.studiedToday,
     lastPlayed: localStorage.lastPlayed,
     // UI settings
-    music: localStorage.music,
     sfx: localStorage.sfx,
     tts: localStorage.tts,
   };
@@ -45,7 +43,6 @@ export async function importBackup(backup: Backup) {
   localStorage.showIntro = backup.showIntro;
   localStorage.session = backup.session || "";
   localStorage.unseenIndex = backup.unseenIndex;
-  localStorage.mode = backup.mode;
   // Player
   localStorage.streak = backup.streak;
   localStorage.level = backup.level;
@@ -55,7 +52,6 @@ export async function importBackup(backup: Backup) {
   localStorage.studiedToday = backup.studiedToday;
   localStorage.lastPlayed = backup.lastPlayed;
   // UI settings
-  localStorage.music = backup.music || "";
   localStorage.sfx = backup.sfx || "";
   localStorage.tts = backup.tts || "";
 }
@@ -93,14 +89,6 @@ export function setShowIntro() {
   localStorage.showIntro = 0;
 }
 
-export function getMusicEnabled(): boolean {
-  return parseInt(localStorage.music || "1") === 1;
-}
-
-export function setMusicEnabled(enabled: boolean) {
-  localStorage.music = enabled ? 1 : 0;
-}
-
 export function getSFXEnabled(): boolean {
   return parseInt(localStorage.sfx || "1") === 1;
 }
@@ -110,19 +98,11 @@ export function setSFXEnabled(enabled: boolean) {
 }
 
 export function getTTSEnabled(): boolean {
-  return parseInt(localStorage.tts || "0") === 1;
+  return parseInt(localStorage.tts || "1") === 1;
 }
 
 export function setTTSEnabled(enabled: boolean) {
   localStorage.tts = enabled ? 1 : 0;
-}
-
-export function getMode(): boolean {
-  return parseInt(localStorage.mode || "1") === 1;
-}
-
-export function setMode(mode: boolean) {
-  localStorage.mode = mode ? 1 : 0;
 }
 
 export function getUnseenIndex(): number {

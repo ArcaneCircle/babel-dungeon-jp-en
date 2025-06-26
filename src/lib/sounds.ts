@@ -1,19 +1,10 @@
 // @ts-ignore
 import { Howl } from "howler";
-import { getMusicEnabled } from "~/lib/storage";
 
-import musicURL from "@sfx/music.mp3";
 import VictorySmallURL from "@sfx/VictorySmall.mp3";
 import successURL from "@sfx/success.mp3";
 import errorURL from "@sfx/error.mp3";
 import vgmenuhighlightURL from "@sfx/vgmenuhighlight.mp3";
-
-export const backgroundMusic = new Howl({
-  src: [musicURL],
-  loop: true,
-  autoplay: getMusicEnabled(),
-  volume: 0.3,
-});
 
 export const levelUpSfx = new Howl({
   src: [VictorySmallURL],

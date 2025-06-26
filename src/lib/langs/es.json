@@ -1,0 +1,63 @@
+{
+  "Continue": "Continuar",
+
+  "MAX": "MAX",
+  "xp": "xp",
+  "LEVEL": "NIVEL",
+  "STREAK:": "RACHA:",
+  "day": "día",
+  "days": "días",
+  "PLAYED:": "JUGADO:",
+  "today": "hoy",
+  "REVIEW:": "REPASAR:",
+  "Discovered:": "Descubierto:",
+  "Mastered:": "Dominado:",
+  "GAME MODE": "MODO DE JUEGO",
+  "Easy": "Fácil",
+  "Hard": "Difícil",
+  "Cancel": "Cancelar",
+
+  "+{{x}}xp": "+{{x}}xp",
+  "lvl.{{l}}": "lvl.{{l}}",
+  "NEW": "NUEVO",
+  "Did you know it?": "¿Lo sabías?",
+  "Reveal": "Revelar",
+
+  "CREDITS": "CRÉDITOS",
+  "Developer: Asiel Diaz Benitez (adb)": "Desarrollador: Asiel Diaz Benitvez (adb)",
+  "Sentences collection: tatoeba.org": "Oraciones: tatoeba.org",
+  "UI Icons: \"Pixel Icon\" by HackerNoon": "Íconos: \"Pixel Icon\" de HackerNoon",
+  "Sound effects by celestialghost8, Fupi and Dizzy Crow": "Efectos de sonido: celestialghost8, Fupi and Dizzy Crow",
+  "Translators: adb, sbkaf": "Traductores: adb, sbkaf",
+  "More details at: github.com/ArcaneCircle/babel-dungeon-{{l1}}-{{l2}}": "Más detalles en: github.com/ArcaneCircle/babel-dungeon-{{l1}}-{{l2}}",
+
+  "Welcome to Babel Dungeon!": "¡Bienvenid@ a Babel Dungeon!",
+  "Looking for a shortcut to learning another language you entered the Babel Dungeon, but to your surprise, instead of answers, all you found was weird creatures creeping in the darkness.": "Buscando un atajo para aprender otro idoma, entraste en la mazmorra de Babel, pero para tu sorpresa, en lugar de respuestas, lo único que encontraste fueron extrañas criaturas arrastrándose en la oscuridad.",
+  "They look weak but you realized that by solving their linguistic riddles, they become stronger!": "Parecen débiles, pero te diste cuenta de que al resolver sus acertijos lingüísticos, ¡se vuelven más fuertes!",
+  "Adapting to the circumstances, you decided to train them and build your own army of minions to, one day, get out of the dungeon and take over the world, thus banning any language you don't know.": "Adaptándote a las circunstancias, decidiste entrenarles y construir tu propio ejército de esbirros para, algún día, salir de la mazmorra y conquistar el mundo, prohibiendo así cualquier idioma que no conozcas.",
+
+  "You Leveled Up!": "¡Has subido de nivel!",
+  "Now at level": "Ahora en el nivel",
+  "+{{x}} max. energy": "+{{x}} energía max.",
+
+  "LOW ENERGY!": "¡ENERGÍA BAJA!",
+  "Your energy is too low.": "Tienes muy poca energía.",
+  "You will recover energy over time. Take a break and come back later!": "Recuperarás energía con el tiempo. ¡Descansa y vuelve más tarde!",
+
+  "ROUND COMPLETED!": "¡RONDA COMPLETADA!",
+  "Total XP:": "XP total:",
+  "Accuracy:": "Precisión:",
+  "Time:": "Tiempo:",
+
+  "SETTINGS": "AJUSTES",
+  "SFX": "SFX",
+  "TTS": "TTS",
+  "Import Backup": "Importar Backup",
+  "Export Backup": "Exportar Backup",
+  "Credits": "Créditos",
+  "[ ON]": "[SI]",
+  "[OFF]": "[NO]",
+
+  "ERROR": "ERROR",
+  "Can't import backup, it is not compatible with your version of the game": "No se puede importar la copia de respaldo; no es compatible con tu versión del juego"
+}

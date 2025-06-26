@@ -1,29 +1,45 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, createContext, useContext } from "react";
 
 import styles from "./Modal.module.css";
 
+export const ModalContext = createContext<{
+  isOpen: boolean;
+  setOpen: (isOpen: boolean) => void;
+}>(
+  // @ts-ignore
+  null,
+);
+
 type Props = {
   children: React.ReactNode;
-  isOpen: boolean;
+  [key: string]: any;
 };
 
-export default function Modal({ children, isOpen }: Props) {
-  const modalRef = useRef<HTMLDialogElement>(null);
+export function Modal({ children, ...props }: Props) {
+  const { isOpen, setOpen } = useContext(ModalContext);
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const modal = modalRef.current;
-    if (!modal) return;
+    const dialog = dialogRef.current;
+    const content = contentRef.current;
+    if (!dialog || !content) return;
 
     if (isOpen) {
-      modal.showModal();
+      dialog.showModal();
     } else {
-      modal.close();
+      dialog.close();
     }
+
+    dialog.addEventListener("click", () => setOpen(false));
+    content.addEventListener("click", (event) => event.stopPropagation());
   }, [isOpen]);
 
   return (
-    <dialog ref={modalRef} className={styles.modal}>
-      {children}
+    <dialog ref={dialogRef} className={styles.modal}>
+      <div ref={contentRef} {...props}>
+        {children}
+      </div>
     </dialog>
   );
 }

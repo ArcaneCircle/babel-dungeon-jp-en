@@ -3,7 +3,7 @@ import MenuButton from "./MenuButton";
 interface Props {
   onClick: () => void;
   name: string;
-  state: string;
+  state: React.ReactNode;
   [key: string]: any;
 }
 
@@ -16,7 +16,7 @@ export default function MenuPreference({ name, state, ...props }: Props) {
   return (
     <MenuButton {...props}>
       <div style={divStyle}>
-        <span style={{ paddingRight: "1em" }}>{name}</span> <span>{state}</span>
+        <div style={{ paddingRight: "1em" }}>{name}</div> <div>{state}</div>
       </div>
     </MenuButton>
   );

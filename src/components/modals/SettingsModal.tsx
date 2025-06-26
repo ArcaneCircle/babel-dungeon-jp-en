@@ -1,29 +1,24 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 
-import { _ } from "~/lib/lang";
+import { _ } from "~/lib/i18n";
 import { importGame } from "~/lib/game";
 import {
-  getMusicEnabled,
-  setMusicEnabled,
   getSFXEnabled,
   setSFXEnabled,
   getTTSEnabled,
   setTTSEnabled,
-  getMode,
-  setMode,
   getShowIntro,
   exportBackup,
 } from "~/lib/storage";
-import { backgroundMusic } from "~/lib/sounds";
 
 import MenuPreference from "~/components/MenuPreference";
 import MenuButton from "~/components/MenuButton";
-import ConfirmModal from "./ConfirmModal";
+import ConfirmModal from "~/components/modals/ConfirmModal";
+import { ModalContext } from "~/components/modals/Modal";
 
 interface Props {
   onShowCredits: () => void;
-  onClose: () => void;
-  isOpen: boolean;
+  onImportBackupFailed: () => void;
   [key: string]: any;
 }
 
@@ -32,27 +27,14 @@ function MenuItem({ children }: { children: React.ReactNode }) {
 }
 
 export default function SettingsModal({
+  onImportBackupFailed,
   onShowCredits,
-  onClose,
   ...props
 }: Props) {
-  const [musicEnabled, setMusic] = useState(getMusicEnabled());
+  const { setOpen } = useContext(ModalContext);
   const [sfxEnabled, setSFX] = useState(getSFXEnabled());
   const [ttsEnabled, setTTS] = useState(getTTSEnabled());
-  const [defaultMode, setModeState] = useState(getMode());
 
-  const toggleMusic = () => {
-    setMusic((enabled) => {
-      enabled = !enabled;
-      if (enabled) {
-        backgroundMusic.play();
-      } else {
-        backgroundMusic.stop();
-      }
-      setMusicEnabled(enabled);
-      return enabled;
-    });
-  };
   const toggleSFX = () => {
     setSFX((enabled) => {
       enabled = !enabled;
@@ -67,13 +49,6 @@ export default function SettingsModal({
       return enabled;
     });
   };
-  const toggleMode = () => {
-    setModeState((mode) => {
-      mode = !mode;
-      setMode(mode);
-      return mode;
-    });
-  };
 
   const backupLabel = _(getShowIntro() ? "Import Backup" : "Export Backup");
   const onBackup = async () => {
@@ -81,8 +56,13 @@ export default function SettingsModal({
     if (getShowIntro()) {
       const [file] = await window.webxdc.importFiles({ extensions: [ext] });
       const reader = new FileReader();
-      reader.onload = (e) =>
-        e.target && importGame(JSON.parse(e.target.result as string));
+      reader.onload = (e) => {
+        if (e.target) {
+          if (!importGame(JSON.parse(e.target.result as string))) {
+            onImportBackupFailed();
+          }
+        }
+      };
       reader.readAsText(file, "UTF-8");
     } else {
       const backup = await exportBackup();
@@ -93,28 +73,19 @@ export default function SettingsModal({
         },
       });
     }
-    onClose();
+    setOpen(false);
   };
 
-  const musicState = _(musicEnabled ? "[ ON]" : "[OFF]");
   const sfxState = _(sfxEnabled ? "[ ON]" : "[OFF]");
   const ttsState = _(ttsEnabled ? "[ ON]" : "[OFF]");
-  const modeState = _(defaultMode ? "[EASY]" : "[HARD]");
 
   return (
-    <ConfirmModal onClose={onClose} {...props}>
+    <ConfirmModal {...props}>
       <div>
         <div style={{ marginBottom: "2em" }}>
           {_("SETTINGS")}
           <hr />
         </div>
-        <MenuItem>
-          <MenuPreference
-            name={_("Music")}
-            state={musicState}
-            onClick={toggleMusic}
-          />
-        </MenuItem>
         <MenuItem>
           <MenuPreference
             name={_("SFX")}
@@ -127,13 +98,6 @@ export default function SettingsModal({
             name={_("TTS")}
             state={ttsState}
             onClick={toggleTTS}
-          />
-        </MenuItem>
-        <MenuItem>
-          <MenuPreference
-            name={_("Mode")}
-            state={modeState}
-            onClick={toggleMode}
           />
         </MenuItem>
         <MenuItem>

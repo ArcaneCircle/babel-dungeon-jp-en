@@ -2,10 +2,11 @@ const container = {
   display: "flex",
   flexDirection: "row" as "row",
   flexWrap: "nowrap" as "nowrap",
-  overflowY: "hidden" as "hidden",
-  height: "20px",
+  overflow: "hidden" as "hidden",
+  alignItems: "center",
   border: "2px solid #464646",
   borderRadius: "5px",
+  position: "relative" as "relative",
 };
 const row = {
   height: "5px",
@@ -20,34 +21,45 @@ interface Props {
   progress: number;
   total: number;
   color: string;
-  colorDiag1: string;
-  colorDiag2: string;
-  colorDiag3: string;
+  label?: string;
+  lite?: boolean;
 }
 
 export default function PixelatedProgressBar({
   progress,
   total,
   color,
-  colorDiag1,
-  colorDiag2,
-  colorDiag3,
+  lite,
+  label,
 }: Props) {
+  const height = lite ? "15px" : "20px";
+  const labelStyle = {
+    display: "flex",
+    alignItems: "center",
+    flexWrap: "nowrap" as "nowrap",
+    textWrap: "nowrap" as "nowrap",
+    position: "absolute" as "absolute",
+    fontSize: lite ? "10px" : "12px",
+    paddingLeft: "5px",
+    textShadow: "1px 1px 1px black",
+  };
+  progress = Math.min(progress, total);
   const percentage = Math.round((progress / total) * 100);
   const progressStyle = {
     width: `${percentage}%`,
-    height: "20px",
+    height,
     background: color,
   };
   const d0 = { ...square, background: color };
-  const d1 = { ...square, background: colorDiag1 };
-  const d2 = { ...square, background: colorDiag2 };
-  const d3 = { ...square, background: colorDiag3 };
+  const d1 = { ...square, background: color + "f2" };
+  const d2 = { ...square, background: color + "d9" };
+  const d3 = { ...square, background: color + "4d" };
   const hide = percentage === 100 || progress === 0;
   const pixels = { minWidth: "15px", display: hide ? "none" : "inline-block" };
 
   return (
-    <div style={container}>
+    <div style={{ ...container, height }}>
+      {label && <div style={labelStyle}>{label}</div>}
       <div style={progressStyle}></div>
       <div style={pixels}>
         <div style={row}>
@@ -65,11 +77,13 @@ export default function PixelatedProgressBar({
           <span style={d1}></span>
           <span style={d2}></span>
         </div>
-        <div style={row}>
-          <span style={d0}></span>
-          <span style={d0}></span>
-          <span style={d1}></span>
-        </div>
+        {!lite && (
+          <div style={row}>
+            <span style={d0}></span>
+            <span style={d0}></span>
+            <span style={d1}></span>
+          </div>
+        )}
       </div>
     </div>
   );

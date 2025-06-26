@@ -1,19 +1,20 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
+import PixelThumbsupSolid from "~icons/pixel/thumbsup-solid";
+import PixelThumbsdownSolid from "~icons/pixel/thumbsdown-solid";
 
 import { MAIN_COLOR, RED } from "~/lib/constants";
-import { _ } from "~/lib/lang";
-import { getMode, getTTSEnabled, getSFXEnabled } from "~/lib/storage";
+import { _ } from "~/lib/i18n";
+import { getTTSEnabled, getSFXEnabled } from "~/lib/storage";
 import { successSfx, errorSfx, clickSfx } from "~/lib/sounds";
 import { getCard, sendMonsterUpdate } from "~/lib/game";
 import { tts } from "~/lib/tts";
 
+import { ModalContext } from "~/components/modals/Modal";
 import MonsterCard from "~/components/MonsterCard";
 import Meanings from "~/components/Meanings";
 import StatusBar from "~/components/StatusBar";
-import TextIcon from "~/components/icons/TextIcon";
-import PixelatedImgIcon from "~/components/icons/PixelatedImgIcon";
-
-import checkmarkURL from "@img/checkmark.png";
+import LevelUpModal from "~/components/modals/LevelUpModal";
+import ResultsModal from "~/components/modals/ResultsModal";
 
 const baseBtn = {
   width: "50%",
@@ -30,13 +31,13 @@ const statusBarStyle = {
 };
 
 interface Props {
-  showingResults: boolean;
+  setShowingResults: (showing: boolean) => void;
   showXP: boolean;
   session: Session;
 }
 
 export default function GameSession({
-  showingResults,
+  setShowingResults,
   showXP,
   session,
 }: Props) {
@@ -47,26 +48,35 @@ export default function GameSession({
   return (
     <Quiz
       key={monster.id}
-      showingResults={showingResults}
       showXP={showXP}
       session={session}
       monster={monster}
+      setShowingResults={setShowingResults}
     />
   );
 }
 
 function Quiz({
-  showingResults,
+  setShowingResults,
   showXP,
   session,
   monster,
 }: Props & { monster: Monster }) {
   const [show, setShow] = useState(false);
+  const [modal, setModal] = useState(null as ModalPayload | null);
 
-  const defaultMode = getMode();
+  const defaultMode = session.mode === "easy";
   const ttsEnabled = getTTSEnabled();
   const sfxEnabled = getSFXEnabled();
   const { sentence, meanings } = getCard(monster.id);
+
+  const showingResults = !!modal;
+
+  useEffect(() => {
+    if (ttsEnabled && defaultMode && !showingResults) tts(sentence);
+  }, [monster, showingResults]);
+
+  const pendingCount = session.failed.length + session.pending.length;
 
   const onFailed = useCallback(() => {
     setShow(false);
@@ -75,14 +85,14 @@ function Quiz({
     sendMonsterUpdate(monster, false);
   }, [monster, ttsEnabled, sfxEnabled, defaultMode]);
   const onCorrect = useCallback(() => {
-    const sessionFinished =
-      session.failed.length + session.pending.length === 1;
     const ttsWillSpeak = ttsEnabled && defaultMode;
-    if (sfxEnabled && (!ttsWillSpeak || sessionFinished)) {
+    if (sfxEnabled && (!ttsWillSpeak || pendingCount === 1)) {
       successSfx.play();
     }
-    sendMonsterUpdate(monster, true);
-  }, [monster, ttsEnabled, sfxEnabled, defaultMode]);
+    const mod = sendMonsterUpdate(monster, true);
+    setShowingResults(!!mod);
+    setModal(mod);
+  }, [monster, ttsEnabled, sfxEnabled, defaultMode, pendingCount]);
   const onShow = useCallback(() => {
     if (ttsEnabled && !defaultMode) {
       tts(sentence);
@@ -96,10 +106,6 @@ function Quiz({
     () => <Meanings key={monster.id} meanings={meanings} />,
     [monster.id],
   );
-
-  useEffect(() => {
-    if (ttsEnabled && defaultMode && !showingResults) tts(sentence);
-  }, [monster]);
 
   const sentenceSize = sentence.length > 80 ? "0.9em" : undefined;
 
@@ -120,63 +126,105 @@ function Quiz({
     [monster.id],
   );
 
+  const setOpen = useCallback(
+    (show: boolean) => {
+      if (show) {
+        setShowingResults(!!modal);
+        setModal(modal);
+      } else if (modal && "next" in modal) {
+        setShowingResults(!!modal.next);
+        setModal(modal.next);
+      } else {
+        setShowingResults(false);
+        setModal(null);
+      }
+    },
+    [modal],
+  );
+
   return (
-    <div style={{ textAlign: "center" }}>
-      {statusBarM}
-      <div style={{ padding: "0.5em 0.3em 0.3em 0.3em", marginBottom: "6em" }}>
-        {monsterM}
-        {show && (
+    <>
+      <ModalContext.Provider value={{ isOpen: !!modal, setOpen }}>
+        {modal === null ? null : modal.type === "levelUp" ? (
+          <LevelUpModal level={modal.newLevel} energy={modal.newEnergy} />
+        ) : modal.type === "results" ? (
+          <ResultsModal
+            time={modal.time}
+            xp={modal.xp}
+            accuracy={modal.accuracy}
+          />
+        ) : null}
+      </ModalContext.Provider>
+
+      <div style={{ textAlign: "center" }}>
+        {statusBarM}
+        {pendingCount > 0 && (
           <>
-            <div style={{ paddingTop: "0.5em", paddingBottom: "0.5em" }}>
-              <span style={{ fontSize: "1.5em" }}>↓</span>
-            </div>
-            {defaultMode ? (
-              meaningsComp
-            ) : (
-              <div className="selectable" style={{ fontSize: sentenceSize }}>
-                {sentence}
-              </div>
-            )}
-          </>
-        )}
-      </div>
-      <div
-        style={{
-          position: "fixed",
-          bottom: "0",
-          width: "100%",
-          backgroundColor: "black",
-        }}
-      >
-        {show ? (
-          <>
-            <p style={{ fontSize: "0.8em" }}>{_("Did you know it?")}</p>
-            <button style={{ ...baseBtn, background: RED }} onClick={onFailed}>
-              <TextIcon text="X" />
-            </button>
-            <button
-              style={{ ...baseBtn, background: MAIN_COLOR }}
-              onClick={onCorrect}
+            <div
+              style={{
+                padding: "0.5em 0.3em 0.3em 0.3em",
+                marginBottom: "6em",
+              }}
             >
-              <PixelatedImgIcon
-                src={checkmarkURL}
-                style={{ height: "1em", width: "auto" }}
-              />
-            </button>
+              {monsterM}
+              {show && (
+                <>
+                  <div style={{ paddingTop: "0.5em", paddingBottom: "0.5em" }}>
+                    <span style={{ fontSize: "1.5em" }}>↓</span>
+                  </div>
+                  {defaultMode ? (
+                    meaningsComp
+                  ) : (
+                    <div
+                      className="selectable"
+                      style={{ fontSize: sentenceSize }}
+                    >
+                      {sentence}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+            <div
+              style={{
+                position: "fixed",
+                bottom: "0",
+                width: "100%",
+                backgroundColor: "black",
+              }}
+            >
+              {show ? (
+                <>
+                  <p style={{ fontSize: "0.8em" }}>{_("Did you know it?")}</p>
+                  <button
+                    style={{ ...baseBtn, background: RED }}
+                    onClick={onFailed}
+                  >
+                    <PixelThumbsdownSolid />
+                  </button>
+                  <button
+                    style={{ ...baseBtn, background: MAIN_COLOR }}
+                    onClick={onCorrect}
+                  >
+                    <PixelThumbsupSolid />
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={onShow}
+                  style={{
+                    ...baseBtn,
+                    background: "#32526d",
+                    width: "100%",
+                  }}
+                >
+                  {_("Reveal")}
+                </button>
+              )}
+            </div>
           </>
-        ) : (
-          <button
-            onClick={onShow}
-            style={{
-              ...baseBtn,
-              background: "#32526d",
-              width: "100%",
-            }}
-          >
-            {_("Reveal")}
-          </button>
         )}
       </div>
-    </div>
+    </>
   );
 }

@@ -1,5 +1,5 @@
 import { MAIN_COLOR, RED } from "~/lib/constants";
-import { _ } from "~/lib/lang";
+import { _ } from "~/lib/i18n";
 import { formatTime } from "~/lib/dateutil";
 
 import ConfirmModal from "./ConfirmModal";
@@ -8,8 +8,6 @@ type Props = {
   time: number;
   xp: number;
   accuracy: number;
-  onClose: () => void;
-  isOpen: boolean;
   [key: string]: any;
 };
 

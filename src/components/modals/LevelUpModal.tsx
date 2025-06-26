@@ -1,19 +1,19 @@
 import { useEffect } from "react";
+import PartyPopper from "~icons/custom/party-popper";
 
-import { _ } from "~/lib/lang";
+import { _ } from "~/lib/i18n";
 import { levelUpSfx, successSfx } from "~/lib/sounds";
 import { getSFXEnabled } from "~/lib/storage";
 
-import PixelatedImgIcon from "~/components/icons/PixelatedImgIcon";
 import ConfirmModal from "./ConfirmModal";
 
-import partyPopperURL from "@img/party-popper.png";
+const PartyPopperStyled = () => (
+  <PartyPopper style={{ height: "1.3em", width: "auto" }} />
+);
 
 type Props = {
   level: number;
   energy: number;
-  onClose: () => void;
-  isOpen: boolean;
   [key: string]: any;
 };
 
@@ -25,12 +25,6 @@ export default function LevelUpModal({ level, energy, ...props }: Props) {
     }
   }, [level]);
 
-  const PartyPopper = () => (
-    <PixelatedImgIcon
-      src={partyPopperURL}
-      style={{ height: "1.3em", width: "auto" }}
-    />
-  );
   return (
     <ConfirmModal {...props}>
       <div style={{ textAlign: "center" }}>
@@ -42,11 +36,11 @@ export default function LevelUpModal({ level, energy, ...props }: Props) {
           {_("Now at level")}
         </div>
         <div style={{ fontSize: "1.5em" }}>
-          <PartyPopper />
+          <PartyPopperStyled />
           <span style={{ paddingLeft: "0.2em", paddingRight: "0.2em" }}>
             {level}
           </span>
-          <PartyPopper />
+          <PartyPopperStyled />
         </div>
         {energy > 0 && (
           <div style={{ marginTop: "1em" }}>

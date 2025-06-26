@@ -3,7 +3,6 @@ declare type Payload = { uid: string } & (
       cmd: "init";
       sessionHook: (session: Session | null) => void;
       playerHook: (player: Player) => void;
-      modalHook: (modal: ModalPayload | null) => void;
     }
   | {
       cmd: "mon-up";
@@ -19,7 +18,7 @@ declare type Payload = { uid: string } & (
       cmd: "new";
       energy: number;
       time: number;
-      mode: boolean;
+      mode: GameMode;
     }
   | {
       cmd: "import";
@@ -42,6 +41,7 @@ declare interface Card {
 
 declare interface Session {
   start: number;
+  mode: GameMode;
   xp: number;
   failedIds: number[];
   correct: Monster[];
@@ -70,7 +70,6 @@ declare interface Backup {
   monsters: Monster[];
   session: string;
   unseenIndex: string;
-  mode: string;
   streak: string;
   level: string;
   xp: string;
@@ -78,10 +77,11 @@ declare interface Backup {
   energyTimestamp: string;
   studiedToday: string;
   lastPlayed: string;
-  music: string;
   sfx: string;
   tts: string;
 }
+
+declare type GameMode = "easy" | "hard";
 
 declare type ModalPayload =
   | {
@@ -90,24 +90,9 @@ declare type ModalPayload =
       newEnergy: number;
     }
   | {
-      type: "intro";
-    }
-  | {
-      type: "credits";
-    }
-  | {
-      type: "noEnergy";
-    }
-  | {
-      type: "invalidBackup";
-    }
-  | {
       type: "results";
       time: number;
       xp: number;
       accuracy: number;
       next: ModalPayload | null;
-    }
-  | {
-      type: "settings";
     };

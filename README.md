@@ -2,6 +2,15 @@
 
 A gamified tool for Japanese/English vocabulary learning
 
+## Creating new flavor
+
+- update `public/manifest.toml` and `public/icon.png`
+- replace `test-data.tsv` with the new game data
+- update `LANG1_CODE` and `LANG2_CODE` in `src/lib/constants.ts`
+- if necessary add localization for the interface strings at
+  `src/lib/langs` and update `src/lib/i18n.ts` accordingly.
+- update `README.md`
+
 ## Contributing
 
 ### Installing Dependencies
@@ -68,7 +77,7 @@ git push origin v1.0.1
 
 - Random monster generator code taken from https://github.com/fabianobizarro/react-monsterid (MIT license)
 
-- Background music is "Cave.mp3" from https://opengameart.org/content/cc0-scraps (CC0 - public domain)
+- UI Icons from "Pixel Icon" by [HackerNoon](https://github.com/hackernoon/pixel-icon-library) ([CC BY 4.0](https://creativecommons.org/licenses/by/4.0/))
 
 - Level-up SFX is "VictorySmall.wav" from https://opengameart.org/content/8-bit-sound-fx (CC0 - public domain)
 

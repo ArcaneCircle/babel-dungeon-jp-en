@@ -1,11 +1,8 @@
 import { useState } from "react";
+import PixelRefreshSolid from "~icons/pixel/refresh-solid";
 
 import { clickSfx } from "~/lib/sounds";
 import { getSFXEnabled } from "~/lib/storage";
-
-import PixelatedImgIcon from "~/components/icons/PixelatedImgIcon";
-
-import rotateURL from "@img/rotate.png";
 
 export default function Meanings({ meanings }: { meanings: string[] }) {
   const [index, setIndex] = useState(0);
@@ -35,10 +32,7 @@ export default function Meanings({ meanings }: { meanings: string[] }) {
           }}
         >
           [{index + 1}/{count}]
-          <PixelatedImgIcon
-            src={rotateURL}
-            style={{ height: "1.5em", width: "auto" }}
-          />
+          <PixelRefreshSolid />
         </button>
       ) : (
         ""

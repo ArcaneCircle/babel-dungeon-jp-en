@@ -1,6 +1,18 @@
-import { MAIN_COLOR, RED, MAX_LEVEL } from "~/lib/constants";
-import { _ } from "~/lib/lang";
-import { getLastPlayed } from "~/lib/storage";
+import { useState, useCallback } from "react";
+import PixelPlaySolid from "~icons/pixel/play-solid";
+import PixelCrownSolid from "~icons/pixel/crown-solid";
+import PixelFireSolid from "~icons/pixel/fire-solid";
+import PixelBoltSolid from "~icons/pixel/bolt-solid";
+import PixelSparklesSolid from "~icons/pixel/sparkles-solid";
+
+import { MAIN_COLOR, GOLDEN, BLUE, YELLOW } from "~/lib/constants";
+import { _ } from "~/lib/i18n";
+import { getLastPlayed, getShowIntro } from "~/lib/storage";
+
+import { ModalContext } from "~/components/modals/Modal";
+import NoEnergyModal from "~/components/modals/NoEnergyModal";
+import IntroModal from "~/components/modals/IntroModal";
+import GameModeModal from "~/components/modals/GameModeModal";
 import PixelatedProgressBar from "~/components/PixelatedProgressBar";
 import StatSection from "~/components/StatSection";
 import TitleBar from "~/components/TitleBar";
@@ -15,94 +27,119 @@ const card = {
 };
 
 interface Props {
-  onPlay: () => void;
   player: Player;
-  onShowSettings: () => void;
 }
 
-export default function Home({ onPlay, player, onShowSettings }: Props) {
+export default function Home({ player }: Props) {
+  const [modal, setModal] = useState(
+    (getShowIntro() ? "intro" : null) as "intro" | "noEnergy" | "play" | null,
+  );
   const today = new Date().setHours(0, 0, 0, 0);
   const lastPlayed = getLastPlayed();
-  const streakColor = lastPlayed === today ? MAIN_COLOR : undefined;
-  const streakSize = player.streak > 9999 ? "0.9em" : undefined;
+  const epicStreak = player.streak >= 7;
+  const streakColor =
+    lastPlayed === today ? (epicStreak ? GOLDEN : MAIN_COLOR) : "#a8a8a8";
+  const streakSize = player.streak > 999 ? "0.9em" : undefined;
   const toReviewColor = player.toReview ? undefined : MAIN_COLOR;
-  const energyColor = player.energy < 10 ? RED : undefined;
-
-  const missingXp = player.totalXp - player.xp;
-  const xp = player.lvl === MAX_LEVEL ? _("MAX") : missingXp;
-  const xpColor = player.lvl === MAX_LEVEL ? MAIN_COLOR : undefined;
-  const xpSize =
-    missingXp > 999999 ? "0.8em" : missingXp > 99999 ? "0.9em" : undefined;
-  const xpUnit = player.lvl === MAX_LEVEL ? undefined : _("xp");
 
   const maxSeenRank = player.seen === player.total;
   const seenProgress = maxSeenRank ? 100 : player.seen % 100;
   const seenRankColor = maxSeenRank ? MAIN_COLOR : undefined;
   const maxMasteredRank = player.mastered === player.total;
   const masteredProgress = maxMasteredRank ? 100 : player.mastered % 100;
-  const masteredRankColor = maxMasteredRank ? MAIN_COLOR : undefined;
+  const masteredRankColor = maxMasteredRank ? GOLDEN : undefined;
+
+  const onPlay = useCallback(() => setModal("play"), []);
+  const setOpen = useCallback(
+    (show: boolean) => (show ? setModal(modal) : setModal(null)),
+    [modal],
+  );
+  const onNoEnergy = useCallback(() => setModal("noEnergy"), []);
 
   return (
     <>
-      <TitleBar onShowSettings={onShowSettings} />
+      <ModalContext.Provider value={{ isOpen: !!modal, setOpen }}>
+        {modal === "intro" ? (
+          <IntroModal />
+        ) : modal === "noEnergy" ? (
+          <NoEnergyModal />
+        ) : modal === "play" ? (
+          <GameModeModal
+            energy={player.energy}
+            onNoEnergy={onNoEnergy}
+            style={{ minWidth: "60vw" }}
+          />
+        ) : null}
+      </ModalContext.Provider>
+      <TitleBar />
       <div style={{ padding: "0.5em" }}>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "row",
-            paddingBottom: "1em",
-          }}
-        >
-          <div style={{ ...card, width: "50%", marginRight: "0.2em" }}>
-            <StatSection
-              title={_("LEVEL")}
-              number={player.lvl}
-              style={{ paddingBottom: "1em" }}
+        <div style={{ ...card, marginBottom: "1em" }}>
+          <StatSection
+            title={_("LEVEL")}
+            number={player.lvl}
+            style={{ paddingBottom: "1em" }}
+          />
+          <div style={{ paddingBottom: "0.5em" }}>
+            <PixelSparklesSolid
+              style={{
+                float: "left",
+                paddingRight: "0.5em",
+              }}
             />
-            <StatSection
-              title={_("NEXT")}
-              number={xp}
-              numberSize={xpSize}
-              numberColor={xpColor}
-              unit={xpUnit}
-              style={{ paddingBottom: "1em" }}
-            />
-            <StatSection
-              title={_("ENERGY")}
-              number={player.energy}
-              numberColor={energyColor}
-              unit={`/${player.maxEnergy}`}
+            <PixelatedProgressBar
+              progress={player.totalXp ? player.xp : 100}
+              total={player.totalXp || 100}
+              color={BLUE}
+              label={
+                player.totalXp ? `${player.xp}/${player.totalXp}` : _("MAX")
+              }
             />
           </div>
-          <div style={{ ...card, width: "50%" }}>
-            <StatSection
-              title={_("STREAK")}
-              number={player.streak}
-              numberSize={streakSize}
-              numberColor={streakColor}
-              unit={_(player.streak === 1 ? "day" : "days")}
-              style={{ paddingBottom: "1em" }}
+
+          <div style={{ marginBottom: "1em" }}>
+            <PixelBoltSolid
+              style={{
+                float: "left",
+                paddingRight: "0.5em",
+              }}
             />
-            <StatSection
-              title={_("PLAYED")}
-              number={player.studiedToday}
-              unit={_("today")}
-              style={{ paddingBottom: "1em" }}
-            />
-            <StatSection
-              title={_("REVIEW")}
-              number={player.toReview}
-              numberColor={toReviewColor}
+            <PixelatedProgressBar
+              progress={player.energy}
+              total={player.maxEnergy}
+              color={YELLOW}
+              label={`${player.energy}/${player.maxEnergy}`}
             />
           </div>
+
+          <StatSection
+            title={_("STREAK:")}
+            number={player.streak}
+            numberSize={streakSize}
+            numberColor={streakColor}
+            unit={_(player.streak === 1 ? "day" : "days")}
+            style={{ paddingBottom: "1em" }}
+            icon={<PixelFireSolid style={{ color: streakColor }} />}
+          />
+          <StatSection
+            title={_("PLAYED:")}
+            number={player.studiedToday}
+            unit={_("today")}
+            style={{ paddingBottom: "1em" }}
+          />
+          <StatSection
+            title={_("REVIEW:")}
+            number={player.toReview}
+            numberColor={toReviewColor}
+          />
         </div>
         <div style={card}>
           <div style={{ paddingTop: "0.5em", paddingBottom: "1em" }}>
-            <div style={{ paddingBottom: "0.3em" }}>{_("Discovered:")}</div>
             <div style={{ paddingBottom: "0.3em" }}>
-              {seenProgress}/100
+              {_("Discovered:")}
               <span style={{ display: "inline", float: "right" }}>
-                {_("RANK:")}
+                <PixelCrownSolid
+                  style={{ color: MAIN_COLOR, marginRight: "0.2em" }}
+                />
                 <span style={{ color: seenRankColor }}>
                   {Math.floor(player.seen / 100)}
                 </span>
@@ -111,18 +148,17 @@ export default function Home({ onPlay, player, onShowSettings }: Props) {
             <PixelatedProgressBar
               progress={seenProgress}
               total={100}
-              color={"#92c81a"}
-              colorDiag1={"#7bc415"}
-              colorDiag2={"#74b215"}
-              colorDiag3={"#2c341c"}
+              color={MAIN_COLOR}
+              label={`${seenProgress}/100`}
             />
           </div>
           <div style={{ paddingBottom: "0.5em" }}>
-            <div style={{ paddingBottom: "0.2em" }}>{_("Mastered:")}</div>
             <div style={{ paddingBottom: "0.3em" }}>
-              {masteredProgress}/100
+              {_("Mastered:")}
               <span style={{ display: "inline", float: "right" }}>
-                {_("RANK:")}
+                <PixelCrownSolid
+                  style={{ color: GOLDEN, marginRight: "0.2em" }}
+                />
                 <span style={{ color: masteredRankColor }}>
                   {Math.floor(player.mastered / 100)}
                 </span>
@@ -131,10 +167,8 @@ export default function Home({ onPlay, player, onShowSettings }: Props) {
             <PixelatedProgressBar
               progress={masteredProgress}
               total={100}
-              color={"#efb60e"}
-              colorDiag1={"#e3ad0e"}
-              colorDiag2={"#d09f0d"}
-              colorDiag3={"#423204"}
+              color={GOLDEN}
+              label={`${masteredProgress}/100`}
             />
           </div>
         </div>
@@ -148,7 +182,7 @@ export default function Home({ onPlay, player, onShowSettings }: Props) {
           }}
           onClick={onPlay}
         >
-          {_("Play")}
+          <PixelPlaySolid />
         </MenuButton>
       </div>
     </>
