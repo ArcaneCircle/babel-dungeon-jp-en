@@ -412,5 +412,5 @@ function toNextLevelMediumFast(level: number): number {
 }
 
 function getMaxEnergy(level: number): number {
-  return 30 + Math.floor(level / 10);
+  return 30 + Math.floor(level / 5);
 }

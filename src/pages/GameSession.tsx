@@ -123,7 +123,7 @@ function Quiz({
         meanings={defaultMode ? undefined : meaningsComp}
       />
     ),
-    [monster.id],
+    [monster.id, monster.seen],
   );
 
   const setOpen = useCallback(
