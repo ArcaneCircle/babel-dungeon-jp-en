@@ -65,7 +65,7 @@ export default function Home({ player }: Props) {
           <NoEnergyModal />
         ) : modal === "play" ? (
           <GameModeModal
-            energy={player.energy}
+            player={player}
             onNoEnergy={onNoEnergy}
             style={{ minWidth: "60vw" }}
           />

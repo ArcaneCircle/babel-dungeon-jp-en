@@ -13,30 +13,28 @@ function MenuItem({ children }: { children: React.ReactNode }) {
 }
 
 type Props = {
-  energy: number;
-  onNoEnergy: (cost: number) => void;
+  player: Player;
+  onNoEnergy: () => void;
   [key: string]: any;
 };
 
-export default function GameModeModal({ energy, onNoEnergy, ...props }: Props) {
-  const energyCostHard = Math.floor(PLAY_ENERGY_COST / 2);
+export default function GameModeModal({ player, onNoEnergy, ...props }: Props) {
+  const energyCost =
+    player.toReview > 0 ? PLAY_ENERGY_COST / 2 : PLAY_ENERGY_COST;
+  const energyCostHard = Math.floor(energyCost / 2);
   const playEasy = useCallback(() => {
-    if (energy >= PLAY_ENERGY_COST) {
-      startNewGame("easy");
-    } else {
-      onNoEnergy(PLAY_ENERGY_COST);
+    if (!startNewGame("easy", energyCost)) {
+      onNoEnergy();
     }
-  }, [energy, onNoEnergy]);
+  }, [energyCost, onNoEnergy]);
   const playHard = useCallback(() => {
-    if (energy >= energyCostHard) {
-      startNewGame("hard");
-    } else {
-      onNoEnergy(energyCostHard);
+    if (!startNewGame("hard", energyCostHard)) {
+      onNoEnergy();
     }
-  }, [energy, onNoEnergy]);
+  }, [energyCostHard, onNoEnergy]);
 
-  const easyColor = energy < PLAY_ENERGY_COST ? RED : undefined;
-  const hardColor = energy < energyCostHard ? RED : undefined;
+  const easyColor = player.energy < energyCost ? RED : undefined;
+  const hardColor = player.energy < energyCostHard ? RED : undefined;
 
   return (
     <ConfirmModal buttonText={_("Cancel")} {...props}>
@@ -50,7 +48,7 @@ export default function GameModeModal({ energy, onNoEnergy, ...props }: Props) {
             name={_("Easy")}
             state={
               <div style={{ color: easyColor }}>
-                {`-${PLAY_ENERGY_COST}`}
+                {`${-energyCost}`}
                 <PixelBoltSolid />
               </div>
             }
@@ -62,7 +60,7 @@ export default function GameModeModal({ energy, onNoEnergy, ...props }: Props) {
             name={_("Hard")}
             state={
               <div style={{ color: hardColor }}>
-                {`-${energyCostHard}`}
+                {`${-energyCostHard}`}
                 <PixelBoltSolid />
               </div>
             }

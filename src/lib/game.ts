@@ -1,7 +1,7 @@
 import { ReceivedStatusUpdate, SendingStatusUpdate } from "@webxdc/types";
 
 import { SENTENCES } from "~/lib/sentences";
-import { MAX_LEVEL, MASTERED_STREAK, PLAY_ENERGY_COST } from "~/lib/constants";
+import { MAX_LEVEL, MASTERED_STREAK } from "~/lib/constants";
 import {
   db,
   getSession,
@@ -110,11 +110,9 @@ export function importGame(backup: Backup): boolean {
   return false;
 }
 
-export function startNewGame(mode: GameMode) {
-  const energyCost =
-    mode === "easy" ? PLAY_ENERGY_COST : Math.floor(PLAY_ENERGY_COST / 2);
+export function startNewGame(mode: GameMode, energyCost: number): boolean {
   const energy = getEnergy().energy - energyCost;
-  if (energy < 0) return;
+  if (energy < 0) return false;
 
   const uid = window.webxdc.selfAddr;
   window.webxdc.sendUpdate(
@@ -123,6 +121,7 @@ export function startNewGame(mode: GameMode) {
     },
     "",
   );
+  return true;
 }
 
 function getResultsModal(
