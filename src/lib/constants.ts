@@ -1,5 +1,7 @@
 export const LANG1_CODE = "jp";
 export const LANG2_CODE = "en";
+export const LANG1_NAME = "Japanese";
+export const LANG2_NAME = "English";
 
 export const MAIN_COLOR = "#92c81a",
   GOLDEN = "#fcc200",

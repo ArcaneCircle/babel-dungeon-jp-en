@@ -1,4 +1,5 @@
 import { MAIN_COLOR } from "~/lib/constants";
+import { BORDER_COLOR } from "~/lib/theme";
 
 interface Props {
   progress: number;
@@ -25,7 +26,7 @@ export default function BasicProgressBar({
     transitionTimingFunction: "ease-out",
   };
   return (
-    <div style={{ backgroundColor: background || "#464646" }}>
+    <div style={{ backgroundColor: background || BORDER_COLOR }}>
       <div style={style}></div>
     </div>
   );

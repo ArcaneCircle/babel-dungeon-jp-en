@@ -21,12 +21,18 @@ type Props = {
 export default function GameModeModal({ player, onNoEnergy, ...props }: Props) {
   const energyCost =
     player.toReview > 0 ? PLAY_ENERGY_COST / 2 : PLAY_ENERGY_COST;
-  const energyCostHard = Math.floor(energyCost / 2);
+  const energyCostMedium = Math.floor(energyCost / 2);
+  const energyCostHard = Math.floor(energyCost / 3);
   const playEasy = useCallback(() => {
     if (!startNewGame("easy", energyCost)) {
       onNoEnergy();
     }
   }, [energyCost, onNoEnergy]);
+  const playMedium = useCallback(() => {
+    if (!startNewGame("medium", energyCostMedium)) {
+      onNoEnergy();
+    }
+  }, [energyCostMedium, onNoEnergy]);
   const playHard = useCallback(() => {
     if (!startNewGame("hard", energyCostHard)) {
       onNoEnergy();
@@ -34,6 +40,7 @@ export default function GameModeModal({ player, onNoEnergy, ...props }: Props) {
   }, [energyCostHard, onNoEnergy]);
 
   const easyColor = player.energy < energyCost ? RED : undefined;
+  const mediumColor = player.energy < energyCostMedium ? RED : undefined;
   const hardColor = player.energy < energyCostHard ? RED : undefined;
 
   return (
@@ -53,6 +60,18 @@ export default function GameModeModal({ player, onNoEnergy, ...props }: Props) {
               </div>
             }
             onClick={playEasy}
+          />
+        </MenuItem>
+        <MenuItem>
+          <MenuPreference
+            name={_("Medium")}
+            state={
+              <div style={{ color: mediumColor }}>
+                {`${-energyCostMedium}`}
+                <PixelBoltSolid />
+              </div>
+            }
+            onClick={playMedium}
           />
         </MenuItem>
         <MenuItem>

@@ -5,6 +5,7 @@ import { initGame } from "~/lib/game";
 
 import Home from "~/pages/Home";
 import GameSession from "~/pages/GameSession";
+import Welcome from "~/pages/Welcome";
 
 // @ts-ignore
 import "@fontsource/press-start-2p";
@@ -14,21 +15,27 @@ export default function App() {
   const [session, setSession] = useState(null as Session | null);
   const [forceSession, setForceSession] = useState(false);
   const [player, setPlayer] = useState(null as Player | null);
-  useMemo(() => initGame(setSession, setPlayer), []);
+  const [welcomeComplete, setWelcomeCompleteState] = useState(false);
+  useMemo(() => initGame(setSession, setPlayer, setWelcomeCompleteState), []);
 
   const playing = session && session.pending.length + session.failed.length;
   const showXP = !player || player.lvl !== MAX_LEVEL;
 
+  // don't render anything if initialization hasn't finished
+  if (!player) return;
+
   return (
     <>
-      {playing || (session && forceSession) ? (
+      {!welcomeComplete ? (
+        <Welcome />
+      ) : playing || (session && forceSession) ? (
         <GameSession
           session={session}
           setShowingResults={setForceSession}
           showXP={showXP}
         />
       ) : (
-        player && <Home player={player} />
+        <Home player={player} />
       )}
     </>
   );

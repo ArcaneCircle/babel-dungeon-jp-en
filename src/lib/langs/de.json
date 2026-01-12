@@ -1,4 +1,13 @@
 {
+  "English": "Englisch",
+  "Spanish": "Spanisch",
+  "German": "Deutsch",
+  "French": "Französisch",
+  "Italian": "Italienisch",
+  "Portuguese": "Portugiesisch",
+  "Russian": "Russisch",
+  "Japanese": "Japanisch",
+
   "Continue": "Weiter",
 
   "MAX": "MAX",
@@ -13,7 +22,8 @@
   "Discovered:": "Entdeckt:",
   "Mastered:": "Gemeistert:",
   "GAME MODE": "SPIELMODUS",
-  "Easy": "Einfach",
+  "Easy": "Leicht",
+  "Medium": "Mittel",
   "Hard": "Schwer",
   "Cancel": "Abbrechen",
 
@@ -29,12 +39,7 @@
   "UI Icons: \"Pixel Icon\" by HackerNoon": "UI-Symbole: \"Pixel Icon\" von HackerNoon",
   "Sound effects by celestialghost8, Fupi and Dizzy Crow": "Soundeffekte von celestialghost8, Fupi und Dizzy Crow",
   "Translators: adb, sbkaf": "Übersetzung: adb, sbkaf",
-  "More details at: github.com/ArcaneCircle/babel-dungeon-{{l1}}-{{l2}}": "Mehr Details unter: github.com/ArcaneCircle/babel-dungeon-{{l1}}-{{l2}}",
-
-  "Welcome to Babel Dungeon!": "Willkommen zu Babel Dungeon!",
-  "Looking for a shortcut to learning another language you entered the Babel Dungeon, but to your surprise, instead of answers, all you found was weird creatures creeping in the darkness.": "Auf der Suche nach einer Abkürzung zum Erlernen einer anderen Sprache betraten Sie das Babel Dungeon, aber zu Ihrer Überraschung fanden Sie statt Antworten nur seltsame Kreaturen, die in der Dunkelheit herumkrochen.",
-  "They look weak but you realized that by solving their linguistic riddles, they become stronger!": "Sie sehen schwach aus, aber Sie haben erkannt, dass sie stärker werden, wenn sie ihre sprachlichen Rätsel lösen!",
-  "Adapting to the circumstances, you decided to train them and build your own army of minions to, one day, get out of the dungeon and take over the world, thus banning any language you don't know.": "Dich an diese Umstände anpassend entscheidest Du sie zu trainieren, um eine Armee aus Minions zu erschaffen, aus diesem Verlies zu treten und mit ihnen jede Sprache zu verbannen, die Du selbst nicht kennst.",
+  "Learn more...": "Mehr erfahren...",
 
   "You Leveled Up!": "Du erhältst das nächste Level!",
   "Now at level": "Jetzt bei Level",
@@ -52,12 +57,15 @@
   "SETTINGS": "Einstellungen",
   "SFX": "Effekte",
   "TTS": "Sprachausgabe",
-  "Import Backup": "Backup importieren",
-  "Export Backup": "Backup exportieren",
+  "Export Game": "Spiel exportieren",
   "Credits": "Danksagung",
   "[ ON]": "[ AN]",
   "[OFF]": "[AUS]",
 
   "ERROR": "FEHLER",
-  "Can't import backup, it is not compatible with your version of the game": "Backup kann nicht importiert werden. Es ist nicht kompatibel mit Deiner Version des Spiels"
+  "Can't import backup, it is not compatible with your version of the game": "Backup kann nicht importiert werden. Es ist nicht kompatibel mit Deiner Version des Spiels",
+
+  "New Game": "Neues Spiel",
+  "Import Game": "Spiel importieren",
+  "What language do you want to learn?": "Welche Sprache möchtest Du lernen?"
 }

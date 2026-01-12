@@ -7,7 +7,7 @@
     "start": "vite --port 3000",
     "fix": "prettier --write .",
     "check": "tsc && prettier --check .",
-    "build": "npm run generate && vite build"
+    "build": "pnpm generate && vite build"
   },
   "devDependencies": {
     "@iconify/json": "^2.2.351",

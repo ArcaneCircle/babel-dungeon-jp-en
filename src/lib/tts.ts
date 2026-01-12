@@ -1,14 +1,18 @@
-import { LANG1_CODE } from "~/lib/constants";
+import { LANG1_CODE, LANG2_CODE } from "~/lib/constants";
+import { getLearningLanguage } from "~/lib/storage";
 
 let voice = getVoice();
 
 function getVoice() {
+  const llang = getLearningLanguage();
+  if (!llang) return null;
+  const lang = llang === "LANG2" ? LANG2_CODE : LANG1_CODE;
+
   try {
     const voices = window.speechSynthesis.getVoices();
     return (
-      voices.find(
-        (voice) => voice.lang.split("-")[0].split("_")[0] === LANG1_CODE,
-      ) || null
+      voices.find((voice) => voice.lang.split("-")[0].split("_")[0] === lang) ||
+      null
     );
   } catch (e) {
     console.log(e);
@@ -24,7 +28,7 @@ export function tts(text: string) {
     if (voice) {
       msg.voice = voice;
     } else {
-      msg.lang = LANG1_CODE;
+      msg.lang = getLearningLanguage() === "LANG2" ? LANG2_CODE : LANG1_CODE;
     }
     window.speechSynthesis.speak(msg);
   } catch (e) {

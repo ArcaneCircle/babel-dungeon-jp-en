@@ -3,10 +3,15 @@ declare type Payload = { uid: string } & (
       cmd: "init";
       sessionHook: (session: Session | null) => void;
       playerHook: (player: Player) => void;
+      welcomeHook: (state: boolean) => void;
     }
   | {
       cmd: "mon-up";
-      monster: Monster;
+      monsters: {
+        monster: Monster;
+        sessionId: number;
+        xp: number;
+      }[];
       sessionId: number;
       xp: number;
     }
@@ -23,6 +28,10 @@ declare type Payload = { uid: string } & (
   | {
       cmd: "import";
       backup: Backup;
+    }
+  | {
+      cmd: "lang";
+      lang: "LANG1" | "LANG2";
     }
 );
 
@@ -66,7 +75,6 @@ declare interface Player {
 declare interface Backup {
   version: number;
   lang: string;
-  showIntro: string;
   monsters: Monster[];
   session: string;
   unseenIndex: string;
@@ -79,9 +87,10 @@ declare interface Backup {
   lastPlayed: string;
   sfx: string;
   tts: string;
+  learningLanguage: string;
 }
 
-declare type GameMode = "easy" | "hard";
+declare type GameMode = "easy" | "medium" | "hard";
 
 declare type ModalPayload =
   | {
@@ -96,3 +105,6 @@ declare type ModalPayload =
       accuracy: number;
       next: ModalPayload | null;
     };
+
+/** Injected by Vite: `git describe --tags`. */
+declare const __APP_VERSION__: string;

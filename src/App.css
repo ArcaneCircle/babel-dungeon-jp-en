@@ -1,5 +1,27 @@
 :root {
   touch-action: pan-x pan-y;
+
+  --bg-primary: #000000;
+  --bg-secondary: #313131;
+  --bg-tertiary: #464646;
+  --bg-modal-backdrop: rgba(35, 35, 35, 0.8);
+  --text-primary: #ffffff;
+  --text-secondary: #dddddd;
+  --text-tertiary: #a8a8a8;
+  --border-color: #464646;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg-primary: #ffffff;
+    --bg-secondary: #f0f0f0;
+    --bg-tertiary: #e0e0e0;
+    --bg-modal-backdrop: rgba(220, 220, 220, 0.8);
+    --text-primary: #000000;
+    --text-secondary: #333333;
+    --text-tertiary: #666666;
+    --border-color: #cccccc;
+  }
 }
 
 * {
@@ -16,8 +38,8 @@ html,
 body {
   margin: 0;
   padding: 0;
-  background: black;
-  color: white;
+  background: var(--bg-primary);
+  color: var(--text-primary);
   font-family: "Press Start 2P", system-ui;
   font-size: 16px;
   overflow-wrap: break-word;
@@ -28,6 +50,11 @@ button,
 button * {
   font-family: inherit;
   cursor: pointer;
+}
+
+a {
+  cursor: pointer !important;
+  color: var(--text-primary);
 }
 
 .selectable,

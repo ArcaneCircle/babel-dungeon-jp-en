@@ -1,10 +1,12 @@
+import { BORDER_COLOR, BG_PRIMARY } from "~/lib/theme";
+
 const container = {
   display: "flex",
   flexDirection: "row" as "row",
   flexWrap: "nowrap" as "nowrap",
   overflow: "hidden" as "hidden",
   alignItems: "center",
-  border: "2px solid #464646",
+  border: `2px solid ${BORDER_COLOR}`,
   borderRadius: "5px",
   position: "relative" as "relative",
 };
@@ -41,7 +43,7 @@ export default function PixelatedProgressBar({
     position: "absolute" as "absolute",
     fontSize: lite ? "10px" : "12px",
     paddingLeft: "5px",
-    textShadow: "1px 1px 1px black",
+    textShadow: `1px 1px 1px ${BG_PRIMARY}`,
   };
   progress = Math.min(progress, total);
   const percentage = Math.round((progress / total) * 100);

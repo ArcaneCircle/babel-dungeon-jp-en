@@ -4,6 +4,19 @@ import Icons from "unplugin-icons/vite";
 import { defineConfig } from "vite";
 import path from "path";
 import { promises as fs } from "node:fs";
+import { execSync } from "child_process";
+
+function getVersion(): string {
+  try {
+    return execSync("git describe --tags", {
+      stdio: ["ignore", "pipe", "ignore"],
+    })
+      .toString()
+      .trim();
+  } catch {
+    return "v0.0.0";
+  }
+}
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -22,6 +35,9 @@ export default defineConfig({
       },
     }),
   ],
+  define: {
+    __APP_VERSION__: JSON.stringify(getVersion()),
+  },
   resolve: {
     alias: {
       "~": path.resolve(__dirname, "./src"),

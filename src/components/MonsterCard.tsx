@@ -1,5 +1,6 @@
 import { MAIN_COLOR, GOLDEN, MASTERED_STREAK } from "~/lib/constants";
 import { _ } from "~/lib/i18n";
+import { TEXT_TERTIARY, BG_PRIMARY } from "~/lib/theme";
 
 import MonsterImg from "~/components/MonsterImg";
 
@@ -13,17 +14,16 @@ export default function MonsterCard({ monster, sentence, meanings }: Props) {
   const label = monster.seen
     ? _("lvl.{{l}}").replace("{{l}}", String(monster.streak + 1))
     : _("NEW");
-  const labelColor =
+  const labelBg =
     monster.streak >= MASTERED_STREAK
       ? GOLDEN
       : monster.seen
-        ? "#dddddd"
+        ? TEXT_TERTIARY
         : MAIN_COLOR;
   const labelStyle = {
-    color: labelColor,
-    background: "none",
+    color: BG_PRIMARY,
+    background: labelBg,
     borderRadius: "5px",
-    border: "1px solid " + labelColor,
     padding: "0.3em",
     fontWeight: "bold",
     fontSize: "0.9em",

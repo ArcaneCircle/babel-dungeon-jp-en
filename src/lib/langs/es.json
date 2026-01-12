@@ -1,4 +1,13 @@
 {
+  "English": "Inglés",
+  "Spanish": "Español",
+  "German": "Alemán",
+  "French": "Francés",
+  "Italian": "Italiano",
+  "Portuguese": "Portugués",
+  "Russian": "Ruso",
+  "Japanese": "Japonés",
+
   "Continue": "Continuar",
 
   "MAX": "MAX",
@@ -14,6 +23,7 @@
   "Mastered:": "Dominado:",
   "GAME MODE": "MODO DE JUEGO",
   "Easy": "Fácil",
+  "Medium": "Medio",
   "Hard": "Difícil",
   "Cancel": "Cancelar",
 
@@ -29,12 +39,7 @@
   "UI Icons: \"Pixel Icon\" by HackerNoon": "Íconos: \"Pixel Icon\" de HackerNoon",
   "Sound effects by celestialghost8, Fupi and Dizzy Crow": "Efectos de sonido: celestialghost8, Fupi and Dizzy Crow",
   "Translators: adb, sbkaf": "Traductores: adb, sbkaf",
-  "More details at: github.com/ArcaneCircle/babel-dungeon-{{l1}}-{{l2}}": "Más detalles en: github.com/ArcaneCircle/babel-dungeon-{{l1}}-{{l2}}",
-
-  "Welcome to Babel Dungeon!": "¡Bienvenid@ a Babel Dungeon!",
-  "Looking for a shortcut to learning another language you entered the Babel Dungeon, but to your surprise, instead of answers, all you found was weird creatures creeping in the darkness.": "Buscando un atajo para aprender otro idoma, entraste en la mazmorra de Babel, pero para tu sorpresa, en lugar de respuestas, lo único que encontraste fueron extrañas criaturas arrastrándose en la oscuridad.",
-  "They look weak but you realized that by solving their linguistic riddles, they become stronger!": "Parecen débiles, pero te diste cuenta de que al resolver sus acertijos lingüísticos, ¡se vuelven más fuertes!",
-  "Adapting to the circumstances, you decided to train them and build your own army of minions to, one day, get out of the dungeon and take over the world, thus banning any language you don't know.": "Adaptándote a las circunstancias, decidiste entrenarles y construir tu propio ejército de esbirros para, algún día, salir de la mazmorra y conquistar el mundo, prohibiendo así cualquier idioma que no conozcas.",
+  "Learn more...": "Saber más...",
 
   "You Leveled Up!": "¡Has subido de nivel!",
   "Now at level": "Ahora en el nivel",
@@ -52,12 +57,15 @@
   "SETTINGS": "AJUSTES",
   "SFX": "SFX",
   "TTS": "TTS",
-  "Import Backup": "Importar Backup",
-  "Export Backup": "Exportar Backup",
+  "Export Game": "Exportar juego",
   "Credits": "Créditos",
   "[ ON]": "[SI]",
   "[OFF]": "[NO]",
 
   "ERROR": "ERROR",
-  "Can't import backup, it is not compatible with your version of the game": "No se puede importar la copia de respaldo; no es compatible con tu versión del juego"
+  "Can't import backup, it is not compatible with your version of the game": "No se puede importar la copia de respaldo; no es compatible con tu versión del juego",
+
+  "New Game": "Nuevo juego",
+  "Import Game": "Importar juego",
+  "What language do you want to learn?": "¿Qué idioma quieres aprender?"
 }

@@ -1,6 +1,7 @@
 import { ReceivedStatusUpdate, SendingStatusUpdate } from "@webxdc/types";
 
 import { SENTENCES } from "~/lib/sentences";
+import { initializeSentences } from "~/lib/invertSentences";
 import { MAX_LEVEL, MASTERED_STREAK } from "~/lib/constants";
 import {
   db,
@@ -22,14 +23,16 @@ import {
   getUnseenIndex,
   setMaxSerial,
   getMaxSerial,
-  setShowIntro,
   importBackup,
   isValidBackup,
+  getLearningLanguage,
+  setLearningLanguage,
 } from "~/lib/storage";
 
 const MONSTER_UPDATE_CMD = "mon-up",
   INIT_CMD = "init",
   NEW_CMD = "new",
+  LANG_CMD = "lang",
   FINISHED_CMD = "finished",
   IMPORT_CMD = "import";
 const MAX_MONSTER_STREAK = 999;
@@ -37,7 +40,33 @@ const sixMinutes = 6 * 60 * 1000;
 let energyLastCheck = 0;
 let setPlayerState = null as ((player: Player) => void) | null;
 let setSessionState = (_: Session | null) => {};
+let setWelcomeCompleteState = (_: boolean) => {};
 const queue: ReceivedStatusUpdate<Payload>[] = [];
+const pendingMonsterUpdates: Array<{
+  monster: Monster;
+  sessionId: number;
+  xp: number;
+}> = [];
+
+// Initialize SENTENCES based on learning language
+initializeSentences(getLearningLanguage());
+
+// send batch of pending monster updates when user closes/minimizes the app
+function flushPendingMonsterUpdates() {
+  if (pendingMonsterUpdates.length === 0) return;
+
+  const statusUpdate = {
+    payload: {
+      uid: window.webxdc.selfAddr,
+      cmd: MONSTER_UPDATE_CMD,
+      monsters: [...pendingMonsterUpdates],
+    },
+  } as SendingStatusUpdate<Payload>;
+  window.webxdc.sendUpdate(statusUpdate, "");
+
+  pendingMonsterUpdates.length = 0;
+}
+
 const workerLoop = async () => {
   while (queue.length > 0) {
     await processUpdate(queue.shift()!);
@@ -96,7 +125,25 @@ export async function getPlayer(): Promise<Player> {
   };
 }
 
-export function importGame(backup: Backup): boolean {
+export function selectLanguage(lang: "LANG1" | "LANG2") {
+  const uid = window.webxdc.selfAddr;
+  window.webxdc.sendUpdate(
+    {
+      payload: { uid, cmd: LANG_CMD, lang },
+    },
+    "",
+  );
+}
+
+export function importGame(rawBackup: string): boolean {
+  let backup: Backup;
+  try {
+    backup = JSON.parse(rawBackup);
+  } catch (e) {
+    console.log(e);
+    return false;
+  }
+
   if (isValidBackup(backup)) {
     const uid = window.webxdc.selfAddr;
     window.webxdc.sendUpdate(
@@ -142,7 +189,7 @@ function getResultsModal(
 
 export function sendMonsterUpdate(
   monster: Monster,
-  correct: boolean,
+  correct: number,
 ): ModalPayload | null {
   monster = { ...monster };
   let modal = null;
@@ -151,7 +198,7 @@ export function sendMonsterUpdate(
   monster.seen = now.getTime();
   let xp = 0;
   if (correct) {
-    monster.streak = Math.min(monster.streak + 1, MAX_MONSTER_STREAK);
+    monster.streak = Math.min(monster.streak + correct, MAX_MONSTER_STREAK);
     if (level !== MAX_LEVEL) {
       const bonus = Math.min(Math.floor(level / 5), 40);
       xp = Math.min(bonus + monster.streak, 50);
@@ -180,7 +227,8 @@ export function sendMonsterUpdate(
       }
       default: {
         if (monster.streak > 15) {
-          monster.due = addDays(30 * 5 + monster.streak * 4);
+          const mul = correct > 1 ? 10 : 4;
+          monster.due = addDays(30 * 5 + monster.streak * mul);
         } else if (monster.streak > 10) {
           monster.due = addDays(30 * (monster.streak - 10));
         } else if (monster.streak > MASTERED_STREAK) {
@@ -196,9 +244,17 @@ export function sendMonsterUpdate(
   }
 
   const session = getSession()!;
+  for (const { monster, xp } of pendingMonsterUpdates) {
+    updateMonster(monster, session);
+    session.xp += xp;
+  }
   updateMonster(monster, session);
   session.xp += xp;
   if (!session.pending.length && !session.failed.length) {
+    // session finished, clear pending updates queue,
+    // session contains updated state
+    pendingMonsterUpdates.length = 0;
+
     const update = {
       payload: {
         uid: window.webxdc.selfAddr,
@@ -220,16 +276,12 @@ export function sendMonsterUpdate(
     }
     window.webxdc.sendUpdate(update, "");
   } else {
-    const update = {
-      payload: {
-        uid: window.webxdc.selfAddr,
-        cmd: MONSTER_UPDATE_CMD,
-        sessionId: session.start,
-        monster,
-        xp,
-      },
-    } as SendingStatusUpdate<Payload>;
-    window.webxdc.sendUpdate(update, "");
+    pendingMonsterUpdates.push({
+      monster,
+      sessionId: session.start,
+      xp,
+    });
+    setSessionState(session);
   }
   return modal;
 }
@@ -237,6 +289,7 @@ export function sendMonsterUpdate(
 export function initGame(
   sessionHook: (session: Session | null) => void,
   playerHook: (player: Player) => void,
+  welcomeHook: (state: boolean) => void,
 ) {
   window.webxdc
     .setUpdateListener(
@@ -249,12 +302,20 @@ export function initGame(
           uid: window.webxdc.selfAddr,
           cmd: INIT_CMD,
           sessionHook,
+          welcomeHook,
           playerHook,
         },
         serial: -1,
         max_serial: 0,
       });
     });
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+      flushPendingMonsterUpdates();
+    }
+  });
+  window.addEventListener("beforeunload", flushPendingMonsterUpdates);
 }
 
 async function processUpdate(update: ReceivedStatusUpdate<Payload>) {
@@ -264,25 +325,35 @@ async function processUpdate(update: ReceivedStatusUpdate<Payload>) {
       case INIT_CMD: {
         setSessionState = payload.sessionHook;
         setPlayerState = payload.playerHook;
+        setWelcomeCompleteState = payload.welcomeHook;
+        setWelcomeCompleteState(!!getLearningLanguage());
         setSessionState(getSession());
+        // player must be set last because it used to detect initialization
         setPlayerState(await getPlayer());
+
         return; // this command is not real update, abort
       }
       case MONSTER_UPDATE_CMD: {
         const session = getSession();
-        if (session && payload.sessionId === session.start) {
-          const findMon = (m: Monster) =>
-            m.id === payload.monster.id && m.seen === payload.monster.seen;
-          // hack for iOS bug: updates get processed twice
-          if (
-            session.correct.findIndex(findMon) === -1 &&
-            session.failed.findIndex(findMon) === -1
-          ) {
-            updateMonster(payload.monster, session);
-            if (payload.xp) session.xp += payload.xp;
-            setSession(session);
+        let needsUpdate = false;
+        for (const { monster, sessionId, xp } of payload.monsters) {
+          if (session && sessionId === session.start) {
+            const findMon = (m: Monster) =>
+              m.id === monster.id && m.seen === monster.seen;
+            // hack for iOS bug: updates get processed twice
+            if (
+              session.correct.findIndex(findMon) === -1 &&
+              session.failed.findIndex(findMon) === -1
+            ) {
+              updateMonster(monster, session);
+              if (xp) session.xp += xp;
+              needsUpdate = true;
+            }
           }
-          setSessionState(session);
+        }
+        if (needsUpdate) {
+          setSession(session!);
+          setSessionState(session!);
         }
         break;
       }
@@ -318,12 +389,19 @@ async function processUpdate(update: ReceivedStatusUpdate<Payload>) {
         setEnergy(payload.energy, payload.time);
         const session = await createNewSession(payload.time, payload.mode);
         setSession(session);
-        setShowIntro();
         setSessionState(session);
+        break;
+      }
+      case LANG_CMD: {
+        setLearningLanguage(payload.lang);
+        initializeSentences(payload.lang);
+        setWelcomeCompleteState(true);
         break;
       }
       case IMPORT_CMD: {
         await importBackup(payload.backup);
+        initializeSentences(getLearningLanguage());
+        setWelcomeCompleteState(true);
         if (setPlayerState) setPlayerState(await getPlayer());
         setSessionState(getSession());
         break;
@@ -359,6 +437,14 @@ async function createNewSession(
   if (monsters.length < 10) {
     monsters = await db.monsters.orderBy("due").limit(10).toArray();
   }
+
+  monsters.sort((mon1, mon2) => {
+    if (mon1.seen === 0 || mon2.seen === 0) {
+      return mon2.seen - mon1.seen;
+    }
+    return 0;
+  });
+
   return {
     start,
     mode,

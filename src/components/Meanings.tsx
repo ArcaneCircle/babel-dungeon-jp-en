@@ -3,6 +3,7 @@ import PixelRefreshSolid from "~icons/pixel/refresh-solid";
 
 import { clickSfx } from "~/lib/sounds";
 import { getSFXEnabled } from "~/lib/storage";
+import { BG_PRIMARY, TEXT_PRIMARY } from "~/lib/theme";
 
 export default function Meanings({ meanings }: { meanings: string[] }) {
   const [index, setIndex] = useState(0);
@@ -22,8 +23,8 @@ export default function Meanings({ meanings }: { meanings: string[] }) {
         <button
           onClick={onSwitch}
           style={{
-            background: "#dddddd",
-            color: "black",
+            background: TEXT_PRIMARY,
+            color: BG_PRIMARY,
             borderRadius: "5px",
             border: "none",
             padding: "0.4em",

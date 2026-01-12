@@ -8,6 +8,7 @@ type Props = {
 };
 
 export default function CreditsModal(props: Props) {
+  const BASE_URL = "https://github.com/ArcaneCircle/babel-dungeon";
   return (
     <ConfirmModal {...props}>
       <div className="selectable" style={{ textAlign: "center" }} tabIndex={1}>
@@ -16,17 +17,20 @@ export default function CreditsModal(props: Props) {
           <hr />
         </div>
         <div style={{ fontSize: "0.9em" }}>
+          <p>
+            Babel Dungeon
+            <br />
+            {__APP_VERSION__}
+          </p>
           <p>{_("Developer: Asiel Diaz Benitez (adb)")}</p>
           <p>{_("Sentences collection: tatoeba.org")}</p>
           <p>{_('UI Icons: "Pixel Icon" by HackerNoon')}</p>
           <p>{_("Sound effects by celestialghost8, Fupi and Dizzy Crow")}</p>
           <p>{_("Translators: adb, sbkaf")}</p>
           <p>
-            {_(
-              "More details at: github.com/ArcaneCircle/babel-dungeon-{{l1}}-{{l2}}",
-            )
-              .replace("{{l1}}", LANG1_CODE)
-              .replace("{{l2}}", LANG2_CODE)}
+            <a target="_blank" href={`${BASE_URL}-${LANG1_CODE}-${LANG2_CODE}`}>
+              {_("Learn more...")}
+            </a>
           </p>
         </div>
       </div>

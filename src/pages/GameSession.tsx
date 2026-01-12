@@ -1,13 +1,15 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import PixelThumbsupSolid from "~icons/pixel/thumbsup-solid";
 import PixelThumbsdownSolid from "~icons/pixel/thumbsdown-solid";
+import PixelCrownSolid from "~icons/pixel/crown-solid";
 
-import { MAIN_COLOR, RED } from "~/lib/constants";
+import { MAIN_COLOR, RED, GOLDEN, MASTERED_STREAK } from "~/lib/constants";
 import { _ } from "~/lib/i18n";
 import { getTTSEnabled, getSFXEnabled } from "~/lib/storage";
 import { successSfx, errorSfx, clickSfx } from "~/lib/sounds";
 import { getCard, sendMonsterUpdate } from "~/lib/game";
 import { tts } from "~/lib/tts";
+import { BG_PRIMARY, TEXT_PRIMARY } from "~/lib/theme";
 
 import { ModalContext } from "~/components/modals/Modal";
 import MonsterCard from "~/components/MonsterCard";
@@ -17,17 +19,23 @@ import LevelUpModal from "~/components/modals/LevelUpModal";
 import ResultsModal from "~/components/modals/ResultsModal";
 
 const baseBtn = {
-  width: "50%",
-  color: "white",
+  color: TEXT_PRIMARY,
   border: "none",
   padding: "0.6em 0.5em",
   fontSize: "1.5em",
+  flexGrow: 1,
+};
+
+const btnContainerStyle = {
+  display: "flex",
+  flexDirection: "row" as "row",
+  flexWrap: "nowrap" as "nowrap",
 };
 
 const statusBarStyle = {
   position: "sticky",
   top: 0,
-  backgroundColor: "black",
+  backgroundColor: BG_PRIMARY,
 };
 
 interface Props {
@@ -65,7 +73,9 @@ function Quiz({
   const [show, setShow] = useState(false);
   const [modal, setModal] = useState(null as ModalPayload | null);
 
-  const defaultMode = session.mode === "easy";
+  const defaultMode =
+    session.mode === "easy" ||
+    (session.mode === "medium" && monster.streak < MASTERED_STREAK);
   const ttsEnabled = getTTSEnabled();
   const sfxEnabled = getSFXEnabled();
   const { sentence, meanings } = getCard(monster.id);
@@ -73,7 +83,9 @@ function Quiz({
   const showingResults = !!modal;
 
   useEffect(() => {
-    if (ttsEnabled && defaultMode && !showingResults) tts(sentence);
+    if (ttsEnabled && defaultMode && !showingResults && !document.hidden) {
+      tts(sentence);
+    }
   }, [monster, showingResults]);
 
   const pendingCount = session.failed.length + session.pending.length;
@@ -82,14 +94,23 @@ function Quiz({
     setShow(false);
     const ttsWillSpeak = ttsEnabled && defaultMode;
     if (sfxEnabled && !ttsWillSpeak) errorSfx.play();
-    sendMonsterUpdate(monster, false);
+    sendMonsterUpdate(monster, 0);
   }, [monster, ttsEnabled, sfxEnabled, defaultMode]);
   const onCorrect = useCallback(() => {
     const ttsWillSpeak = ttsEnabled && defaultMode;
     if (sfxEnabled && (!ttsWillSpeak || pendingCount === 1)) {
       successSfx.play();
     }
-    const mod = sendMonsterUpdate(monster, true);
+    const mod = sendMonsterUpdate(monster, 1);
+    setShowingResults(!!mod);
+    setModal(mod);
+  }, [monster, ttsEnabled, sfxEnabled, defaultMode, pendingCount]);
+  const onMastered = useCallback(() => {
+    const ttsWillSpeak = ttsEnabled && defaultMode;
+    if (sfxEnabled && (!ttsWillSpeak || pendingCount === 1)) {
+      successSfx.play();
+    }
+    const mod = sendMonsterUpdate(monster, 5);
     setShowingResults(!!mod);
     setModal(mod);
   }, [monster, ttsEnabled, sfxEnabled, defaultMode, pendingCount]);
@@ -190,36 +211,46 @@ function Quiz({
                 position: "fixed",
                 bottom: "0",
                 width: "100%",
-                backgroundColor: "black",
+                backgroundColor: BG_PRIMARY,
               }}
             >
               {show ? (
                 <>
                   <p style={{ fontSize: "0.8em" }}>{_("Did you know it?")}</p>
-                  <button
-                    style={{ ...baseBtn, background: RED }}
-                    onClick={onFailed}
-                  >
-                    <PixelThumbsdownSolid />
-                  </button>
-                  <button
-                    style={{ ...baseBtn, background: MAIN_COLOR }}
-                    onClick={onCorrect}
-                  >
-                    <PixelThumbsupSolid />
-                  </button>
+                  <div style={btnContainerStyle}>
+                    <button
+                      style={{ ...baseBtn, background: RED }}
+                      onClick={onFailed}
+                    >
+                      <PixelThumbsdownSolid />
+                    </button>
+                    <button
+                      style={{ ...baseBtn, background: GOLDEN }}
+                      onClick={onMastered}
+                    >
+                      <PixelCrownSolid />
+                    </button>
+                    <button
+                      style={{ ...baseBtn, background: MAIN_COLOR }}
+                      onClick={onCorrect}
+                    >
+                      <PixelThumbsupSolid />
+                    </button>
+                  </div>
                 </>
               ) : (
-                <button
-                  onClick={onShow}
-                  style={{
-                    ...baseBtn,
-                    background: "#32526d",
-                    width: "100%",
-                  }}
-                >
-                  {_("Reveal")}
-                </button>
+                <div style={btnContainerStyle}>
+                  <button
+                    onClick={onShow}
+                    style={{
+                      ...baseBtn,
+                      color: "white",
+                      background: "#32526d",
+                    }}
+                  >
+                    {_("Reveal")}
+                  </button>
+                </div>
               )}
             </div>
           </>

@@ -1,5 +1,6 @@
 import { clickSfx } from "~/lib/sounds";
 import { getSFXEnabled } from "~/lib/storage";
+import { BG_SECONDARY, TEXT_PRIMARY } from "~/lib/theme";
 
 interface Props {
   onClick: () => void;
@@ -11,8 +12,8 @@ export default function MenuButton({ onClick, children, ...props }: Props) {
   const btnStyle = {
     width: "100%",
     fontSize: "1em",
-    color: "black",
-    backgroundColor: "white",
+    color: TEXT_PRIMARY,
+    backgroundColor: BG_SECONDARY,
     cursor: "pointer",
     border: "none",
     borderRadius: "5px",

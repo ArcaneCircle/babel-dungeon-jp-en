@@ -7,11 +7,11 @@ import PixelSparklesSolid from "~icons/pixel/sparkles-solid";
 
 import { MAIN_COLOR, GOLDEN, BLUE, YELLOW } from "~/lib/constants";
 import { _ } from "~/lib/i18n";
-import { getLastPlayed, getShowIntro } from "~/lib/storage";
+import { getLastPlayed } from "~/lib/storage";
+import { BORDER_COLOR, TEXT_TERTIARY } from "~/lib/theme";
 
 import { ModalContext } from "~/components/modals/Modal";
 import NoEnergyModal from "~/components/modals/NoEnergyModal";
-import IntroModal from "~/components/modals/IntroModal";
 import GameModeModal from "~/components/modals/GameModeModal";
 import PixelatedProgressBar from "~/components/PixelatedProgressBar";
 import StatSection from "~/components/StatSection";
@@ -21,7 +21,7 @@ import MenuButton from "~/components/MenuButton";
 const card = {
   display: "flex",
   flexDirection: "column" as "column",
-  border: "1px solid #464646",
+  border: `1px solid ${BORDER_COLOR}`,
   borderRadius: "5px",
   padding: "10px",
 };
@@ -31,14 +31,12 @@ interface Props {
 }
 
 export default function Home({ player }: Props) {
-  const [modal, setModal] = useState(
-    (getShowIntro() ? "intro" : null) as "intro" | "noEnergy" | "play" | null,
-  );
+  const [modal, setModal] = useState(null as "noEnergy" | "play" | null);
   const today = new Date().setHours(0, 0, 0, 0);
   const lastPlayed = getLastPlayed();
   const epicStreak = player.streak >= 7;
   const streakColor =
-    lastPlayed === today ? (epicStreak ? GOLDEN : MAIN_COLOR) : "#a8a8a8";
+    lastPlayed === today ? (epicStreak ? GOLDEN : MAIN_COLOR) : TEXT_TERTIARY;
   const streakSize = player.streak > 999 ? "0.9em" : undefined;
   const toReviewColor = player.toReview ? undefined : MAIN_COLOR;
 
@@ -59,9 +57,7 @@ export default function Home({ player }: Props) {
   return (
     <>
       <ModalContext.Provider value={{ isOpen: !!modal, setOpen }}>
-        {modal === "intro" ? (
-          <IntroModal />
-        ) : modal === "noEnergy" ? (
+        {modal === "noEnergy" ? (
           <NoEnergyModal />
         ) : modal === "play" ? (
           <GameModeModal
